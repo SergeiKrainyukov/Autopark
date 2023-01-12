@@ -46,7 +46,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                         "/trip",
                         "/trips",
                         "/generateTrip",
-                        "report"
+                        "/report"
                 ).hasRole(ROLE_MANAGER)
                 .and()
                 .csrf()
@@ -60,7 +60,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                         new AntPathRequestMatcher("/trip"),
                         new AntPathRequestMatcher("/trips"),
                         new AntPathRequestMatcher("/generateTrip"),
-                        new AntPathRequestMatcher("report")
+                        new AntPathRequestMatcher("/report")
                 );
 
         super.configure(http);

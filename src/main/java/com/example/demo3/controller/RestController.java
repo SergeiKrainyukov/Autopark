@@ -136,7 +136,7 @@ public class RestController {
     }
 
     //TODO: set real values
-    @GetMapping("report")
+    @GetMapping("/report")
     public ReportDto getReport(
             @RequestParam(value = "vehicleId", defaultValue = "0") int vehicleId,
             @RequestParam(value = "type", defaultValue = "mileage") String type,
