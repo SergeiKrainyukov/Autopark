@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  mysqldb:
+    platform: linux/arm64/v8
+    container_name: mysqldb
+    image: mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: autopark
+      MYSQL_ROOT_PASSWORD: mypass
+
+  spring_boot:
+    depends_on:
+      - mysqldb
+    container_name: spring-app
+    image: springboot
+    restart: always
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/autopark
+      SPRING_DATASOURCE_USERNAME: root
