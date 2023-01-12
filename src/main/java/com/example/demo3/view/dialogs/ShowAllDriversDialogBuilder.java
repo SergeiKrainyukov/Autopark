@@ -17,9 +17,6 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.example.demo3.common.Strings.DRIVERS_TITLE;
 import static com.example.demo3.common.Strings.OK_BUTTON;
 
@@ -67,7 +64,7 @@ public class ShowAllDriversDialogBuilder {
     private VerticalLayout createDialogLayout(Long enterpriseId) {
 
         VirtualList<DriverEntity> list = new VirtualList<>();
-        list.setItems(getDrivers(enterpriseId));
+        list.setItems(driversRepository.getAllByEnterpriseId(enterpriseId));
         list.setRenderer(driverEntityComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
@@ -75,15 +72,5 @@ public class ShowAllDriversDialogBuilder {
         dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
 
         return dialogLayout;
-    }
-
-    //TODO: find drivers by enterpriseId
-    private List<DriverEntity> getDrivers(Long enterpriseId) {
-        List<DriverEntity> driverEntities = new ArrayList<>();
-        for (DriverEntity driverEntity : driversRepository.findAll()) {
-            driverEntities.add(driverEntity);
-        }
-        driverEntities.removeIf(driverEntity -> !driverEntity.getEnterpriseId().equals(enterpriseId));
-        return driverEntities;
     }
 }

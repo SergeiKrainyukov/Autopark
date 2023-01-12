@@ -51,8 +51,8 @@ public class MainView extends VerticalLayout {
     private final ShowVehiclesDialogBuilder showVehiclesDialogBuilder;
     private final ShowAllDriversDialogBuilder showAllDriversDialogBuilder;
 
-    private Button reportsButton = new Button("Reports");
-    private final ReportsDialogBuilder reportsDialogBuilder;
+    //TODO: Use constant for name
+    private final Button reportsButton = new Button("Reports");
 
     @Autowired
     public MainView(
@@ -68,7 +68,6 @@ public class MainView extends VerticalLayout {
         this.securityService = securityService;
         this.brandsRepository = brandsRepository;
         this.enterprisesUIProvider = enterprisesUIProvider;
-        this.reportsDialogBuilder = reportsDialogBuilder;
 
         createHeader();
 

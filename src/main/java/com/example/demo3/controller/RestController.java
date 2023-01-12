@@ -66,7 +66,6 @@ public class RestController {
         if (manager != null) {
             manager.getEnterprises().add(createdEnterprise.getId());
             managersRepository.save(manager);
-
         }
         return createdEnterprise;
     }
