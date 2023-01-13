@@ -5,8 +5,6 @@ import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.repository.BrandsRepository;
 import com.example.demo3.repository.VehiclesRepository;
 import com.example.demo3.view.EnterpriseUi;
-import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -92,7 +90,7 @@ public class CRUDVehicleDialogBuilder {
             enterpriseUiComboBox.setValue(enterpriseUiList.get(0));
             vehicleEntity.setEnterpriseId(enterpriseUiList.get(0).getId());
 
-            enterpriseUiComboBox.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<EnterpriseUi>, EnterpriseUi>>) event -> vehicleEntity.setEnterpriseId(event.getValue().getId()));
+            enterpriseUiComboBox.addValueChangeListener(event -> vehicleEntity.setEnterpriseId(event.getValue().getId()));
         }
 
         priceField.setValue(vehicleEntity.getPrice() == null ? "" : vehicleEntity.getPrice().toString());
@@ -101,10 +99,10 @@ public class CRUDVehicleDialogBuilder {
         brandEntityComboBox.setValue(vehicleEntity.getBrandId() == null ? brandEntities.get(0) : findBrandById(vehicleEntity.getBrandId()));
         if (vehicleEntity.getBrandId() == null) vehicleEntity.setBrandId(brandEntities.get(0).getId());
 
-        priceField.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>) event -> vehicleEntity.setPrice(Integer.valueOf(event.getValue())));
-        yearField.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>) event -> vehicleEntity.setYear(Integer.valueOf(event.getValue())));
-        mileageField.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>) event -> vehicleEntity.setMileage(Integer.valueOf(event.getValue())));
-        brandEntityComboBox.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<ComboBox<BrandEntity>, BrandEntity>>) event -> vehicleEntity.setBrandId(event.getValue().getId()));
+        priceField.addValueChangeListener(event -> vehicleEntity.setPrice(Integer.valueOf(event.getValue())));
+        yearField.addValueChangeListener(event -> vehicleEntity.setYear(Integer.valueOf(event.getValue())));
+        mileageField.addValueChangeListener(event -> vehicleEntity.setMileage(Integer.valueOf(event.getValue())));
+        brandEntityComboBox.addValueChangeListener(event -> vehicleEntity.setBrandId(event.getValue().getId()));
 
         VerticalLayout dialogLayout;
 

@@ -33,6 +33,7 @@ public class ReportsDialogBuilder {
                 cardLayout.addClickListener((ComponentEventListener<ClickEvent<HorizontalLayout>>) horizontalLayoutClickEvent -> {
                     switch (reportType) {
                         case MILEAGE_BY_PERIOD: {
+                            //TODO: set real vehicleId
                             new MileageByPeriodReportDialogBuilder().createDialogForShowingReports(123L);
                             break;
                         }

@@ -3,10 +3,7 @@ package com.example.demo3.view;
 import com.example.demo3.repository.BrandsRepository;
 import com.example.demo3.repository.VehiclesRepository;
 import com.example.demo3.security.SecurityService;
-import com.example.demo3.view.dialogs.CRUDVehicleDialogBuilder;
-import com.example.demo3.view.dialogs.ReportsDialogBuilder;
-import com.example.demo3.view.dialogs.ShowAllDriversDialogBuilder;
-import com.example.demo3.view.dialogs.ShowVehiclesDialogBuilder;
+import com.example.demo3.view.dialogs.*;
 import com.example.demo3.view.helpers.EnterprisesUIProvider;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
@@ -33,10 +30,6 @@ import static com.example.demo3.common.Strings.*;
 @RolesAllowed(ROLE_MANAGER)
 public class MainView extends VerticalLayout {
 
-    private final static String VEHICLES_KEY = "Vehicles";
-    private final static String DRIVERS_KEY = "Drivers";
-    private final static String NAME_KEY = "Name";
-    private final static String CITY_KEY = "City";
     private final static String HELLO_GREETING = "Hello, ";
     private final static String HEADER_WIDTH = "100%";
 
@@ -50,9 +43,7 @@ public class MainView extends VerticalLayout {
 
     private final ShowVehiclesDialogBuilder showVehiclesDialogBuilder;
     private final ShowAllDriversDialogBuilder showAllDriversDialogBuilder;
-
-    //TODO: Use constant for name
-    private final Button reportsButton = new Button("Reports");
+    private final ReportsDialogBuilder reportsDialogBuilder;
 
     @Autowired
     public MainView(
@@ -68,21 +59,14 @@ public class MainView extends VerticalLayout {
         this.securityService = securityService;
         this.brandsRepository = brandsRepository;
         this.enterprisesUIProvider = enterprisesUIProvider;
-
-        createHeader();
+        this.reportsDialogBuilder = reportsDialogBuilder;
 
         setSpacing(true);
-
-        add(new H2(ENTERPRISES_TITLE));
-        add(enterprisesGrid);
-
-        add(reportsButton);
-        reportsButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> reportsDialogBuilder.createDialogForShowingReports());
-
+        add(createHeader(), new H2(ENTERPRISES_TITLE), createReportsButton(), enterprisesGrid);
         fillEnterprisesGrid();
     }
 
-    private void createHeader() {
+    private VerticalLayout createHeader() {
         H1 logo = new H1(APP_NAME);
         H2 userNameHeader = new H2(HELLO_GREETING + securityService.getAuthenticatedUser().getUsername());
 
@@ -97,35 +81,47 @@ public class MainView extends VerticalLayout {
         verticalLayout.add(header);
         verticalLayout.add(userNameHeader);
 
-        add(verticalLayout);
+        return verticalLayout;
     }
 
     private void fillEnterprisesGrid() {
         enterprisesGrid.setItems(enterprisesUIProvider.getEnterprisesUIForCurrentManager());
-
-        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getName).setHeader(new H4(NAME_KEY));
-        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getCity).setHeader(new H4(CITY_KEY));
+        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getName).setHeader(new H4(NAME));
+        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getCity).setHeader(new H4(CITY));
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getVehicles).setHeader(createVehiclesHeader());
-        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getDrivers).setHeader(new H4(DRIVERS_KEY));
-
-        enterprisesGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<EnterpriseUi>>) enterpriseEntityItemDoubleClickEvent -> {
-            Class componentType = enterpriseEntityItemDoubleClickEvent.getColumn().getHeaderComponent().getClass();
-            if (componentType.equals(HorizontalLayout.class)) {
-                showVehiclesDialogBuilder.createDialogForShowingVehicles(enterpriseEntityItemDoubleClickEvent.getItem());
-            }
-            if (componentType.equals(H4.class)) {
-                showAllDriversDialogBuilder.createDialogForShowingDrivers(enterpriseEntityItemDoubleClickEvent.getItem().getId());
-            }
-        });
+        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getDrivers).setHeader(createDriversHeader());
     }
 
     private Component createVehiclesHeader() {
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(new H4(VEHICLES_KEY));
+        horizontalLayout.add(new H4(VEHICLES_TITLE));
+
         Button addVehicleButton = new Button(new Icon(VaadinIcon.PLUS));
         addVehicleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> new CRUDVehicleDialogBuilder(vehiclesRepository, brandsRepository).createDialogForNewVehicle(enterprisesUIProvider.getEnterprisesUIForCurrentManager()));
-        horizontalLayout.add(addVehicleButton);
+
+        Button showAllVehiclesButton = new Button(SHOW_ALL_BUTTON);
+        showAllVehiclesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(enterprisesUIProvider.getEnterprisesUIForCurrentManager(), showVehiclesDialogBuilder::createDialogForShowingVehicles));
+
+        horizontalLayout.add(addVehicleButton, showAllVehiclesButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);
         return horizontalLayout;
+    }
+
+    private Component createDriversHeader() {
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.add(new H4(DRIVERS_TITLE));
+
+        Button showAllDriversButton = new Button(SHOW_ALL_BUTTON);
+        showAllDriversButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(enterprisesUIProvider.getEnterprisesUIForCurrentManager(), enterpriseUi -> showAllDriversDialogBuilder.createDialogForShowingDrivers(enterpriseUi.getId())));
+
+        horizontalLayout.add(showAllDriversButton);
+        horizontalLayout.setAlignItems(Alignment.CENTER);
+        return horizontalLayout;
+    }
+
+    private Button createReportsButton() {
+        Button reportsButton = new Button(REPORTS_BUTTON);
+        reportsButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> reportsDialogBuilder.createDialogForShowingReports());
+        return reportsButton;
     }
 }

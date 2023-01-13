@@ -36,7 +36,6 @@ import java.util.List;
 import static com.example.demo3.common.Strings.OK_BUTTON;
 import static com.example.demo3.common.Strings.VEHICLES_TITLE;
 
-
 @SpringComponent
 @UIScope
 public class ShowVehiclesDialogBuilder {
