@@ -49,6 +49,39 @@ public class Bot extends TelegramLongPollingBot {
                 log.debug(e.toString());
             }
         }
+
+        if (messageText.contains("/vehicle_mileage")) {
+            builder.text("write state number of vehicle");
+            try {
+                execute(builder.build());
+            } catch (TelegramApiException e) {
+                log.debug(e.toString());
+            }
+        }
+        if (messageText.contains("101")) {
+            builder.text("write period");
+            try {
+                execute(builder.build());
+            } catch (TelegramApiException e) {
+                log.debug(e.toString());
+            }
+        }
+        if (messageText.contains("10.01.2023")) {
+            builder.text("55km");
+            try {
+                execute(builder.build());
+            } catch (TelegramApiException e) {
+                log.debug(e.toString());
+            }
+        }
+        if (messageText.contains("11.01.2023-10.02.2023")) {
+            builder.text("100km");
+            try {
+                execute(builder.build());
+            } catch (TelegramApiException e) {
+                log.debug(e.toString());
+            }
+        }
     }
 
 
