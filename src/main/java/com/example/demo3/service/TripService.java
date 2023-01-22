@@ -40,7 +40,6 @@ public class TripService {
     private static final String API_KEY = "pk.eyJ1Ijoic2VyZ2Vpa3JhaSIsImEiOiJjbGJuaDgxOHAwYTcxM29sOGtra3owdWplIn0.JlUr7-JutfgiO0vadGOHRQ";
     private static final String URL = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
     private static final String ACCESS_TOKEN_PARAMETER = ".json?access_token=";
-    private static final String UTC_TIMEZONE = "UTC";
     private static final char COMMA_SEPARATOR = ',';
 
     @Autowired
