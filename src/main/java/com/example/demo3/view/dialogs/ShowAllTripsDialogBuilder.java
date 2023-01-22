@@ -91,7 +91,7 @@ public class ShowAllTripsDialogBuilder {
     private VerticalLayout createDialogLayout(Long vehicleId) {
 
         VirtualList<TripDto> list = new VirtualList<>();
-        list.setItems(tripService.getAllTripsByVehicleId(vehicleId).getTrips());
+        list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId).getTrips());
         list.setRenderer(tripComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);

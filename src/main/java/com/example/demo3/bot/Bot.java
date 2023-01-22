@@ -17,6 +17,7 @@ public class Bot extends TelegramLongPollingBot {
         this.config = config;
     }
 
+    //TODO: set real answers
     public void onUpdateReceived(Update update) {
         update.getUpdateId();
         SendMessage.SendMessageBuilder builder = SendMessage.builder();

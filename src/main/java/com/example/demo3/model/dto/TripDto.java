@@ -3,6 +3,8 @@ package com.example.demo3.model.dto;
 import com.google.appengine.api.search.GeoPoint;
 
 public class TripDto {
+    private long startDateMillis;
+    private long endDateMillis;
     private String startDate;
     private String endDate;
     private Place startPlace;
@@ -12,6 +14,15 @@ public class TripDto {
     }
 
     public TripDto(String startDate, String endDate, GeoPoint startPoint, String startPlaceName, GeoPoint endPoint, String endPlaceName) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startPlace = new Place(startPoint, startPlaceName);
+        this.endPlace = new Place(endPoint, endPlaceName);
+    }
+
+    public TripDto(long startDateMillis, long endDateMillis, String startDate, String endDate, GeoPoint startPoint, String startPlaceName, GeoPoint endPoint, String endPlaceName) {
+        this.startDateMillis = startDateMillis;
+        this.endDateMillis = endDateMillis;
         this.startDate = startDate;
         this.endDate = endDate;
         this.startPlace = new Place(startPoint, startPlaceName);
@@ -40,6 +51,22 @@ public class TripDto {
 
     public Place getEndPlace() {
         return endPlace;
+    }
+
+    public long getStartDateMillis() {
+        return startDateMillis;
+    }
+
+    public void setStartDateMillis(long startDateMillis) {
+        this.startDateMillis = startDateMillis;
+    }
+
+    public long getEndDateMillis() {
+        return endDateMillis;
+    }
+
+    public void setEndDateMillis(long endDateMillis) {
+        this.endDateMillis = endDateMillis;
     }
 
     public static class Place {

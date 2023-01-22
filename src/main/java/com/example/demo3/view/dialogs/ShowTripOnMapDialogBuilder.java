@@ -68,7 +68,9 @@ public class ShowTripOnMapDialogBuilder {
     }
 
     private void saveImage(TripDto tripDto, GeoPointRepository geoPointRepository) throws Exception {
-        List<GeoPointEntity> geoPointEntityList = geoPointRepository.findAllBetweenDates(getLongDate(tripDto.getStartDate()), getLongDate(tripDto.getEndDate()));
+        long longStartDate = tripDto.getStartDateMillis();
+        long longEndDate = tripDto.getEndDateMillis();
+        List<GeoPointEntity> geoPointEntityList = geoPointRepository.findAllBetweenDates(longStartDate, longEndDate);
         if (geoPointEntityList.size() == 0) return;
 
         StringBuilder query = new StringBuilder();

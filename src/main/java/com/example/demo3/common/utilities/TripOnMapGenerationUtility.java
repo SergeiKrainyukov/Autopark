@@ -7,87 +7,103 @@ import com.example.demo3.repository.GeoPointRepository;
 import com.example.demo3.repository.TripRepository;
 import com.google.appengine.api.search.GeoPoint;
 import com.nimbusds.jose.shaded.json.parser.JSONParser;
-import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
-@SpringComponent
+@Configuration
+@PropertySource("classpath:application.properties")
 public class TripOnMapGenerationUtility {
 
-    private final Thread thread;
-    private TripGenerationParametersDto tripGenerationParametersDto;
+    private final GeoPointRepository geoPointRepository;
+    private final TripRepository tripRepository;
 
-    private static final String API_KEY = "5b3ce3597851110001cf6248c88c5b7c7559427cb92111cedc57c866";
-    private static final String BASE_URL = "https://api.openrouteservice.org/v2/directions/driving-car?api_key=";
+    @Value("${open_route_url}")
+    private String BASE_URL;
+
+    private static final double FIRST_GEOPOINT_LATITUDE = 8.681495;
+    private static final double FIRST_GEOPOINT_LONGITUDE = 49.41461;
+    private static final double LAST_GEOPOINT_LATITUDE = 8.687872;
+    private static final double LAST_GEOPOINT_LONGITUDE = 49.420318;
+
+    private static final String CONTENT_TYPE_HEADER = "content-type";
+    private static final String CONTENT_TYPE_VALUE = "application/json";
+    private static final String UTF_8 = "UTF-8";
+    private static final String FEATURES = "features";
+    private static final String GEOMETRY = "geometry";
+    private static final String COORDINATES = "coordinates";
+    private static final String START = "&start=";
+    private static final String END = "&end=";
+    private static final char COMMA_SEPARATOR = ',';
 
     @Autowired
     public TripOnMapGenerationUtility(GeoPointRepository geoPointRepository, TripRepository tripRepository) {
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (tripGenerationParametersDto == null)
-                    thread.interrupt();
-                Date startTripDate = new Date();
-                List<GeoPoint> geoPoints = generateGeoPointsV2();
-                tripRepository.save(new TripEntity(tripGenerationParametersDto.getVehicleId(), startTripDate.getTime(), startTripDate.getTime()));
-                System.out.println("Trip generation started");
-                for (GeoPoint geoPoint : geoPoints) {
-                    try {
-                        System.out.println("Generation is working");
-                        TripEntity tripEntity = tripRepository.getByStartDate(startTripDate.getTime());
-                        geoPointRepository.save(new GeoPointEntity(tripGenerationParametersDto.getVehicleId(), geoPoint, new Date().getTime()));
-                        tripEntity.setEndDate(new Date().getTime());
-                        tripRepository.save(tripEntity);
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                System.out.println("Trip generation stopped");
-            }
-        });
+        this.geoPointRepository = geoPointRepository;
+        this.tripRepository = tripRepository;
     }
 
     public void startGeneratingRoute(TripGenerationParametersDto tripGenerationParametersDto) {
-        this.tripGenerationParametersDto = tripGenerationParametersDto;
-        if (thread.isAlive()) thread.interrupt();
-        thread.start();
+        if (tripGenerationParametersDto == null) return;
+        new Thread(() -> {
+            long startTripDate = Instant.now().toEpochMilli();
+            List<GeoPoint> geoPoints = generateGeoPoints();
+            TripEntity tripEntity = tripRepository.save(new TripEntity(tripGenerationParametersDto.getVehicleId(), startTripDate, startTripDate));
+            for (GeoPoint geoPoint : geoPoints) {
+                long currentDateMillis = Instant.now().toEpochMilli();
+                geoPointRepository.save(new GeoPointEntity(tripGenerationParametersDto.getVehicleId(), geoPoint, currentDateMillis));
+                tripEntity.setEndDate(currentDateMillis);
+                tripRepository.save(tripEntity);
+                sleepCurrentThread();
+            }
+        }).start();
     }
 
-    public void stopGeneratingRoute() {
-        thread.interrupt();
+    public void sleepCurrentThread() {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    //TODO: Randomize start end geopoints
-    private List<GeoPoint> generateGeoPointsV2() {
+    private List<GeoPoint> generateGeoPoints() {
         List<GeoPoint> geoPoints = new ArrayList<>();
-        GeoPoint startGeoPoint = new GeoPoint(8.681495, 49.41461);
-        GeoPoint endGeoPoint = new GeoPoint(8.687872, 49.420318);
+        Random r = new Random();
+        float randomLatFirst = r.nextFloat() * 0.2f;
+        float randomLongFirst = r.nextFloat() * 0.2f;
+        float randomLatSecond = r.nextFloat() * 0.2f;
+        float randomLongSecond = r.nextFloat() * 0.2f;
+        GeoPoint startGeoPoint = new GeoPoint(FIRST_GEOPOINT_LATITUDE + randomLatFirst, FIRST_GEOPOINT_LONGITUDE + randomLongFirst);
+        GeoPoint endGeoPoint = new GeoPoint(LAST_GEOPOINT_LATITUDE + randomLatSecond, LAST_GEOPOINT_LONGITUDE + randomLongSecond);
 
-        String URL = BASE_URL + API_KEY + "&start=" + startGeoPoint.getLatitude() + "," + startGeoPoint.getLongitude() + "&end=" + endGeoPoint.getLatitude() + "," + endGeoPoint.getLongitude();
+        String URL = BASE_URL + START + startGeoPoint.getLatitude() + COMMA_SEPARATOR + startGeoPoint.getLongitude() + END + endGeoPoint.getLatitude() + COMMA_SEPARATOR + endGeoPoint.getLongitude();
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             HttpGet request = new HttpGet(URL);
-            request.addHeader("content-type", "application/json");
+            request.addHeader(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE);
             HttpResponse result = httpClient.execute(request);
-            String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+            String json = EntityUtils.toString(result.getEntity(), UTF_8);
             try {
                 JSONParser parser = new JSONParser();
                 Object resultObject = parser.parse(json);
                 com.nimbusds.jose.shaded.json.JSONObject obj = (com.nimbusds.jose.shaded.json.JSONObject) resultObject;
-                com.nimbusds.jose.shaded.json.JSONArray features = (com.nimbusds.jose.shaded.json.JSONArray) obj.get("features");
+                com.nimbusds.jose.shaded.json.JSONArray features = (com.nimbusds.jose.shaded.json.JSONArray) obj.get(FEATURES);
                 com.nimbusds.jose.shaded.json.JSONObject place = (com.nimbusds.jose.shaded.json.JSONObject) features.get(0);
-                com.nimbusds.jose.shaded.json.JSONObject geometry = (com.nimbusds.jose.shaded.json.JSONObject) place.get("geometry");
-                com.nimbusds.jose.shaded.json.JSONArray coordinates = (com.nimbusds.jose.shaded.json.JSONArray) geometry.get("coordinates");
+                com.nimbusds.jose.shaded.json.JSONObject geometry = (com.nimbusds.jose.shaded.json.JSONObject) place.get(GEOMETRY);
+                com.nimbusds.jose.shaded.json.JSONArray coordinates = (com.nimbusds.jose.shaded.json.JSONArray) geometry.get(COORDINATES);
                 for (Object coordinate : coordinates) {
                     com.nimbusds.jose.shaded.json.JSONArray coordinatesArray = (com.nimbusds.jose.shaded.json.JSONArray) coordinate;
                     double latitude = (double) coordinatesArray.get(0);

@@ -41,6 +41,7 @@ public class TripService {
     private static final String URL = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
     private static final String ACCESS_TOKEN_PARAMETER = ".json?access_token=";
     private static final String UTC_TIMEZONE = "UTC";
+    private static final char COMMA_SEPARATOR = ',';
 
     @Autowired
     public TripService(TripRepository tripRepository, GeoPointRepository geoPointRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository) {
@@ -105,11 +106,13 @@ public class TripService {
                 GeoPoint startGeoPoint = new GeoPoint(firstGeopointEntity.getGeoPoint().getX(), firstGeopointEntity.getGeoPoint().getY());
                 GeoPoint endGeoPoint = new GeoPoint(lastGeopointEntity.getGeoPoint().getX(), lastGeopointEntity.getGeoPoint().getY());
 
-                String startDateFormatted = getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), tripEntity.getStartDate());
-                String endDateFormatted = getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), tripEntity.getEndDate());
+                String startDateFormatted = getZonedTimeStringFormatted(TimeZone.getTimeZone(enterpriseEntity.getTimeZone()), tripEntity.getStartDate());
+                String endDateFormatted = getZonedTimeStringFormatted(TimeZone.getTimeZone(enterpriseEntity.getTimeZone()), tripEntity.getEndDate());
 
-                String placeName = requestPlace(URL + startGeoPoint.getLatitude() + "," + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
-                tripDtoList.add(new TripDto(startDateFormatted, endDateFormatted, startGeoPoint, placeName, endGeoPoint, placeName));
+                String startPlaceName = requestPlace(URL + startGeoPoint.getLatitude() + COMMA_SEPARATOR + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
+                String endPlaceName = requestPlace(URL + endGeoPoint.getLatitude() + COMMA_SEPARATOR + endGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
+
+                tripDtoList.add(new TripDto(startDateFormatted, endDateFormatted, startGeoPoint, startPlaceName, endGeoPoint, endPlaceName));
             }
             return new TripsDto(tripDtoList);
         } catch (Exception e) {
@@ -118,7 +121,7 @@ public class TripService {
         }
     }
 
-    public TripsDto getAllTripsByVehicleId(long vehicleId) {
+    public TripsDto getAllTripsByVehicleIdForUI(long vehicleId) {
         try {
             VehicleEntity vehicleEntity = vehiclesRepository.findById(vehicleId).orElse(null);
             if (vehicleEntity == null) return new TripsDto();
@@ -128,24 +131,22 @@ public class TripService {
             if (tripEntities.size() == 0) return new TripsDto();
             List<TripDto> tripDtoList = new ArrayList<>();
             for (TripEntity tripEntity : tripEntities) {
-                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate()));
+                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate(), vehicleId));
                 if (geoPointEntities.size() == 0) continue;
-                geoPointEntities.sort((o1, o2) -> {
-                    if (o1.getDate() < o2.getDate()) return 1;
-                    else if (o1.getDate().equals(o2.getDate())) return 0;
-                    else return -1;
-                });
+
                 GeoPointEntity firstGeopointEntity = geoPointEntities.get(0);
                 GeoPointEntity lastGeopointEntity = geoPointEntities.get(geoPointEntities.size() - 1);
 
                 GeoPoint startGeoPoint = new GeoPoint(firstGeopointEntity.getGeoPoint().getX(), firstGeopointEntity.getGeoPoint().getY());
                 GeoPoint endGeoPoint = new GeoPoint(lastGeopointEntity.getGeoPoint().getX(), lastGeopointEntity.getGeoPoint().getY());
 
-                String startDateFormatted = getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), tripEntity.getStartDate());
-                String endDateFormatted = getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), tripEntity.getEndDate());
+                String startDateFormatted = getZonedTimeStringFormatted(TimeZone.getDefault(), tripEntity.getStartDate());
+                String endDateFormatted = getZonedTimeStringFormatted(TimeZone.getDefault(), tripEntity.getEndDate());
 
-                String placeName = requestPlace(URL + startGeoPoint.getLatitude() + "," + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
-                tripDtoList.add(new TripDto(startDateFormatted, endDateFormatted, startGeoPoint, placeName, endGeoPoint, placeName));
+                String startPlaceName = requestPlace(URL + startGeoPoint.getLatitude() + COMMA_SEPARATOR + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
+                String endPlaceName = requestPlace(URL + endGeoPoint.getLatitude() + COMMA_SEPARATOR + endGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
+
+                tripDtoList.add(new TripDto(tripEntity.getStartDate(), tripEntity.getEndDate(), startDateFormatted, endDateFormatted, startGeoPoint, startPlaceName, endGeoPoint, endPlaceName));
             }
             return new TripsDto(tripDtoList);
         } catch (Exception e) {
@@ -193,11 +194,11 @@ public class TripService {
         return parsedDate.getTime();
     }
 
-    private String getZonedTimeStringFormatted(String timezone, Long dateMillis) {
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE));
+    private String getZonedTimeStringFormatted(TimeZone timezone, Long dateMillis) {
+        Calendar calendar = Calendar.getInstance(timezone);
         calendar.setTime(new Date(dateMillis));
         DateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
-        dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
+        dateFormat.setTimeZone(timezone);
         return dateFormat.format(calendar.getTime());
     }
 

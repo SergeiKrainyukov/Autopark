@@ -13,7 +13,4 @@ public interface TripRepository extends CrudRepository<TripEntity, Long> {
 
     @Query(value = "SELECT * FROM trip_entity WHERE vehicle_id = ?1", nativeQuery = true)
     List<TripEntity> getAllByVehicleId(long vehicleId);
-
-    @Query(value = "SELECT * FROM trip_entity WHERE start_date = ?1 LIMIT 1", nativeQuery = true)
-    TripEntity getByStartDate(long startDate);
 }
