@@ -28,4 +28,5 @@ public class Strings {
     public static final String ENTERPRISES_TITLE = "Enterprises";
     public static final String VEHICLES_TITLE = "Vehicles";
     public static final String DRIVERS_TITLE = "Drivers";
+    public static final String REPORTS_TITLE = "Reports";
 }

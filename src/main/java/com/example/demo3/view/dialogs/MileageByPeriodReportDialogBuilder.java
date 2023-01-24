@@ -3,6 +3,7 @@ package com.example.demo3.view.dialogs;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportResult;
+import com.example.demo3.repository.TripRepository;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ import static com.example.demo3.common.Strings.OK_BUTTON;
 @SpringComponent
 @UIScope
 public class MileageByPeriodReportDialogBuilder {
+
+    private final TripRepository tripRepository;
 
     private final ComponentRenderer<Component, ReportResult> driverEntityComponentRenderer = new ComponentRenderer<>(
             result -> {
@@ -42,11 +46,16 @@ public class MileageByPeriodReportDialogBuilder {
                 return cardLayout;
             });
 
-    public void createDialogForShowingReports(Long vehicleId) {
+    @Autowired
+    public MileageByPeriodReportDialogBuilder(TripRepository tripRepository) {
+        this.tripRepository = tripRepository;
+    }
+
+    public void createDialogForShowingReports(Long vehicleId, long dateFrom, long dateTo) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Mileage By Period Report");
 
-        dialog.add(optionsLayout(), createDialogLayout(vehicleId));
+        dialog.add(optionsLayout(), createDialogLayout(vehicleId, dateFrom, dateTo));
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
 
@@ -55,7 +64,7 @@ public class MileageByPeriodReportDialogBuilder {
     }
 
 
-    //TODO: options logic
+    //TODO: remove all fields
     private VerticalLayout optionsLayout() {
 
         VerticalLayout verticalLayout = new VerticalLayout();
@@ -81,10 +90,10 @@ public class MileageByPeriodReportDialogBuilder {
         return verticalLayout;
     }
 
-    private VerticalLayout createDialogLayout(Long vehicleId) {
+    private VerticalLayout createDialogLayout(Long vehicleId, long dateFrom, long dateTo) {
 
         VirtualList<ReportResult> list = new VirtualList<>();
-        list.setItems(getResults(vehicleId));
+        list.setItems(getResults(vehicleId, dateFrom, dateTo));
         list.setRenderer(driverEntityComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
@@ -94,8 +103,8 @@ public class MileageByPeriodReportDialogBuilder {
         return dialogLayout;
     }
 
-    private List<ReportResult> getResults(Long vehicleId) {
-        return new ArrayList<>(new MileageByPeriodReport(ReportPeriod.DAY, 1671397312124L, 1675597312124L, vehicleId).getResult());
+    private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo) {
+        return new ArrayList<>(new MileageByPeriodReport(ReportPeriod.DAY, dateFrom, dateTo, vehicleId, tripRepository).getResult());
     }
 
 

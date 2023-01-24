@@ -92,13 +92,8 @@ public class TripService {
             if (tripEntities.size() == 0) return null;
             List<TripDto> tripDtoList = new ArrayList<>();
             for (TripEntity tripEntity : tripEntities) {
-                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate()));
+                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(vehicleId, tripEntity.getStartDate(), tripEntity.getEndDate()));
                 if (geoPointEntities.size() == 0) continue;
-                geoPointEntities.sort((o1, o2) -> {
-                    if (o1.getDate() < o2.getDate()) return 1;
-                    else if (o1.getDate().equals(o2.getDate())) return 0;
-                    else return -1;
-                });
                 GeoPointEntity firstGeopointEntity = geoPointEntities.get(0);
                 GeoPointEntity lastGeopointEntity = geoPointEntities.get(geoPointEntities.size() - 1);
 

@@ -47,10 +47,11 @@ public class GenerateRandomVehiclesUtility {
             Long enterpriseId = enterprisesId.get(random.nextInt(enterprisesId.size()));
             VehicleEntity vehicleEntity = vehiclesRepository.save(mockObjectsCreator.createMockVehicleForEnterpriseAndBrand(enterpriseId, brandEntities.get(random.nextInt(brandEntities.size())).getId()));
             EnterpriseEntity enterpriseEntity = enterprisesRepository.findById(enterpriseId).orElse(null);
-            assert enterpriseEntity != null;
-            enterpriseEntity.getVehicles().add(vehicleEntity.getId());
-            enterprisesRepository.save(enterpriseEntity);
-            vehicleEntities.add(vehicleEntity);
+            if (enterpriseEntity != null) {
+                enterpriseEntity.getVehicles().add(vehicleEntity.getId());
+                enterprisesRepository.save(enterpriseEntity);
+                vehicleEntities.add(vehicleEntity);
+            }
         }
         return vehicleEntities;
     }

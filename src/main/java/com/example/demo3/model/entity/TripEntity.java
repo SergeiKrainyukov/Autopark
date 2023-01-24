@@ -13,14 +13,16 @@ public class TripEntity {
     private Long vehicleId;
     private Long startDate;
     private Long endDate;
+    private int distance;
 
     public TripEntity() {
     }
 
-    public TripEntity(Long vehicleId, Long startDate, Long endDate) {
+    public TripEntity(Long vehicleId, Long startDate, Long endDate, int distance) {
         this.vehicleId = vehicleId;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.distance = distance;
     }
 
     public Long getStartDate() {
@@ -53,5 +55,13 @@ public class TripEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
 }

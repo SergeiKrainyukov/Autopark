@@ -8,8 +8,6 @@ import com.example.demo3.model.entity.ManagerEntity;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.model.mock.CreateRandVehiclesInfoDto;
 import com.example.demo3.model.mock.MockObjectsCreator;
-import com.example.demo3.model.report.MileageByPeriodReport;
-import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.repository.ManagersRepository;
 import com.example.demo3.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,8 @@ public class RestController {
     private TripService tripService;
     @Autowired
     private TripOnMapGenerationUtility tripOnMapGenerationUtility;
+    @Autowired
+    private ReportService reportService;
 
     @GetMapping(
             path = "/vehicles",
@@ -134,16 +134,11 @@ public class RestController {
         tripOnMapGenerationUtility.startGeneratingRoute(tripGenerationParametersDto);
     }
 
-    //TODO: set real values
     @GetMapping("/report")
     public ReportDto getReport(
-            @RequestParam(value = "vehicleId", defaultValue = "0") int vehicleId,
-            @RequestParam(value = "type", defaultValue = "mileage") String type,
-            @RequestParam(value = "dateFrom", defaultValue = "") String dateFrom,
-            @RequestParam(value = "dateTo", defaultValue = "") String dateTo,
-            @RequestParam(value = "period", defaultValue = "day") String period
+            @RequestBody ReportInfoDto reportInfoDto
     ) {
-        return new ReportDto(new MileageByPeriodReport(ReportPeriod.DAY,1671397312124L,1675597312124L,128L).getResult());
+        return reportService.getReport(reportInfoDto);
     }
 }
 

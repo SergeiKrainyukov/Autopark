@@ -51,7 +51,8 @@ public class MainView extends VerticalLayout {
             ShowAllDriversDialogBuilder showAllDriversDialogBuilder,
             SecurityService securityService,
             BrandsRepository brandsRepository,
-            EnterprisesUIProvider enterprisesUIProvider, ReportsDialogBuilder reportsDialogBuilder) {
+            EnterprisesUIProvider enterprisesUIProvider,
+            ReportsDialogBuilder reportsDialogBuilder) {
         this.vehiclesRepository = vehiclesRepository;
         this.showVehiclesDialogBuilder = showVehiclesDialogBuilder;
         this.showAllDriversDialogBuilder = showAllDriversDialogBuilder;

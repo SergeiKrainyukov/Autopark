@@ -60,7 +60,7 @@ public class TripOnMapGenerationUtility {
         new Thread(() -> {
             long startTripDate = Instant.now().toEpochMilli();
             List<GeoPoint> geoPoints = generateGeoPoints();
-            TripEntity tripEntity = tripRepository.save(new TripEntity(tripGenerationParametersDto.getVehicleId(), startTripDate, startTripDate));
+            TripEntity tripEntity = tripRepository.save(new TripEntity(tripGenerationParametersDto.getVehicleId(), startTripDate, startTripDate, tripGenerationParametersDto.getDistance()));
             for (GeoPoint geoPoint : geoPoints) {
                 long currentDateMillis = Instant.now().toEpochMilli();
                 geoPointRepository.save(new GeoPointEntity(tripGenerationParametersDto.getVehicleId(), geoPoint, currentDateMillis));
