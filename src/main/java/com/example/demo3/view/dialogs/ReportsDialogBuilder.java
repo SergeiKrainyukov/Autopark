@@ -27,6 +27,7 @@ import static com.example.demo3.common.Strings.REPORTS_TITLE;
 @UIScope
 public class ReportsDialogBuilder {
 
+    //TODO: set report type as dropdown button
     private static final String REPORT_TYPE_LABEL = "Report type: ";
     private static final String VEHICLE_ID_LABEL = "VehicleId: ";
     private static final String FROM_LABEL = "From";

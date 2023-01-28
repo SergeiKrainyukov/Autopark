@@ -55,39 +55,12 @@ public class MileageByPeriodReportDialogBuilder {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle("Mileage By Period Report");
 
-        dialog.add(optionsLayout(), createDialogLayout(vehicleId, dateFrom, dateTo));
+        dialog.add(createDialogLayout(vehicleId, dateFrom, dateTo));
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
 
         dialog.getFooter().add(okButton);
         dialog.open();
-    }
-
-
-    //TODO: remove all fields
-    private VerticalLayout optionsLayout() {
-
-        VerticalLayout verticalLayout = new VerticalLayout();
-
-        HorizontalLayout dateFields = new HorizontalLayout();
-        DatePicker startDatePicker = new DatePicker("From");
-        DatePicker endDatePicker = new DatePicker("To");
-        dateFields.add(startDatePicker, endDatePicker);
-
-        HorizontalLayout otherOptions = new HorizontalLayout();
-
-        ComboBox<ReportPeriod> reportPeriodComboBox = new ComboBox<>("Report Period");
-        reportPeriodComboBox.setItems(ReportPeriod.values());
-        reportPeriodComboBox.setItemLabelGenerator(ReportPeriod::name);
-
-        TextField vehicleNumberTextField = new TextField("Vehicle Number");
-
-        Button applyButton = new Button("Apply");
-
-        otherOptions.add(reportPeriodComboBox, vehicleNumberTextField, applyButton);
-
-        verticalLayout.add(dateFields, otherOptions);
-        return verticalLayout;
     }
 
     private VerticalLayout createDialogLayout(Long vehicleId, long dateFrom, long dateTo) {
@@ -104,7 +77,7 @@ public class MileageByPeriodReportDialogBuilder {
     }
 
     private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo) {
-        return new ArrayList<>(new MileageByPeriodReport(ReportPeriod.DAY, dateFrom, dateTo, vehicleId, tripRepository).getResult());
+        return new MileageByPeriodReport(ReportPeriod.DAY, dateFrom, dateTo, vehicleId, tripRepository).getResult();
     }
 
 
