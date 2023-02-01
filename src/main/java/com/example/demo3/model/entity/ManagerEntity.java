@@ -23,6 +23,8 @@ public class ManagerEntity extends User {
 
     public ManagerEntity() {
         super(" ", " ", new ArrayList<>());
+        username = " ";
+        password = " ";
     }
 
     public ManagerEntity(String username, String password, Collection<? extends GrantedAuthority> authorities) {
