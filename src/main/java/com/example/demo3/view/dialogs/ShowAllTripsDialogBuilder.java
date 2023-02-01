@@ -20,6 +20,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 
+import java.time.ZoneOffset;
+import java.util.Date;
+
 import static com.example.demo3.common.Strings.OK_BUTTON;
 
 @SpringComponent
@@ -32,6 +35,8 @@ public class ShowAllTripsDialogBuilder {
     private static final String START_DATE = "Start Date";
     private static final String END_DATE = "End Date";
     private static final String TRIP_TITLE = "----------Trip----------";
+
+    private final VirtualList<TripDto> list = new VirtualList<>();
 
     private final Long vehicleId;
 
@@ -70,7 +75,6 @@ public class ShowAllTripsDialogBuilder {
         new ShowTripOnMapDialogBuilder().createDialog(tripDto, geoPointRepository);
     }
 
-    //TODO: write datepickers logic
     public void createTripsDialog() {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle(ROUTES_TITLE);
@@ -79,9 +83,14 @@ public class ShowAllTripsDialogBuilder {
 
         DatePicker startDatePicker = new DatePicker(START_DATE);
         DatePicker endDatePicker = new DatePicker(END_DATE);
-        dialog.add(startDatePicker);
-        dialog.add(endDatePicker);
-        dialog.add(dialogLayout);
+        Button reloadButton = new Button("Reload");
+        reloadButton.addClickListener(event -> {
+            if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) return;
+            long startDate = startDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+            long endDate = endDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+            list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId, startDate, endDate).getTrips());
+        });
+        dialog.add(startDatePicker, endDatePicker, reloadButton, dialogLayout);
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
         dialog.getFooter().add(okButton);
@@ -90,8 +99,7 @@ public class ShowAllTripsDialogBuilder {
 
     private VerticalLayout createDialogLayout(Long vehicleId) {
 
-        VirtualList<TripDto> list = new VirtualList<>();
-        list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId).getTrips());
+        list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId, 0, 0).getTrips());
         list.setRenderer(tripComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);

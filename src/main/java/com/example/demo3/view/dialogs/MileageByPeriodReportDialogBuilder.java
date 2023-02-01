@@ -51,11 +51,11 @@ public class MileageByPeriodReportDialogBuilder {
         this.tripRepository = tripRepository;
     }
 
-    public void createDialogForShowingReports(Long vehicleId, long dateFrom, long dateTo) {
+    public void createDialogForShowingReports(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Mileage By Period Report");
+        dialog.setHeaderTitle("Mileage By " + reportPeriod.name() + " Report");
 
-        dialog.add(createDialogLayout(vehicleId, dateFrom, dateTo));
+        dialog.add(createDialogLayout(vehicleId, dateFrom, dateTo, reportPeriod));
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
 
@@ -63,10 +63,10 @@ public class MileageByPeriodReportDialogBuilder {
         dialog.open();
     }
 
-    private VerticalLayout createDialogLayout(Long vehicleId, long dateFrom, long dateTo) {
+    private VerticalLayout createDialogLayout(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
 
         VirtualList<ReportResult> list = new VirtualList<>();
-        list.setItems(getResults(vehicleId, dateFrom, dateTo));
+        list.setItems(getResults(vehicleId, dateFrom, dateTo, reportPeriod));
         list.setRenderer(driverEntityComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
@@ -76,8 +76,8 @@ public class MileageByPeriodReportDialogBuilder {
         return dialogLayout;
     }
 
-    private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo) {
-        return new MileageByPeriodReport(ReportPeriod.DAY, dateFrom, dateTo, vehicleId, tripRepository).getResult();
+    private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
+        return new MileageByPeriodReport(reportPeriod, dateFrom, dateTo, vehicleId, tripRepository).getResult();
     }
 
 

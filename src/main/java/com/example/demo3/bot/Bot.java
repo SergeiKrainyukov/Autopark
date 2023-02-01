@@ -42,15 +42,6 @@ public class Bot extends TelegramLongPollingBot {
             }
         }
 
-        if (messageText.contains("/chartId")) {
-            builder.text("ID Канала : " + chatId);
-            try {
-                execute(builder.build());
-            } catch (TelegramApiException e) {
-                log.debug(e.toString());
-            }
-        }
-
         if (messageText.contains("/vehicle_mileage")) {
             builder.text("write state number of vehicle");
             try {

@@ -1,11 +1,13 @@
 package com.example.demo3.view.dialogs;
 
+import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportType;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -27,14 +29,15 @@ import static com.example.demo3.common.Strings.REPORTS_TITLE;
 @UIScope
 public class ReportsDialogBuilder {
 
-    //TODO: set report type as dropdown button
     private static final String REPORT_TYPE_LABEL = "Report type: ";
+    private static final String REPORT_PERIOD_LABEL = "Report period: ";
     private static final String VEHICLE_ID_LABEL = "VehicleId: ";
     private static final String FROM_LABEL = "From";
     private static final String TO_LABEL = "To";
-    private TextField textField = new TextField(VEHICLE_ID_LABEL);
-    private DatePicker datePickerFrom = new DatePicker(FROM_LABEL);
-    private DatePicker datePickerTo = new DatePicker(TO_LABEL);
+    private final TextField textField = new TextField(VEHICLE_ID_LABEL);
+    private final DatePicker datePickerFrom = new DatePicker(FROM_LABEL);
+    private final DatePicker datePickerTo = new DatePicker(TO_LABEL);
+    private final ComboBox<ReportPeriod> reportPeriodComboBox = new ComboBox<>(REPORT_PERIOD_LABEL);
 
     private MileageByPeriodReportDialogBuilder mileageByPeriodReportDialogBuilder;
 
@@ -55,7 +58,7 @@ public class ReportsDialogBuilder {
                             try {
                                 long dateFrom = datePickerFrom.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
                                 long dateTo = datePickerTo.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                                mileageByPeriodReportDialogBuilder.createDialogForShowingReports(Long.parseLong(textField.getValue()), dateFrom, dateTo);
+                                mileageByPeriodReportDialogBuilder.createDialogForShowingReports(Long.parseLong(textField.getValue()), dateFrom, dateTo, reportPeriodComboBox.getValue());
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
                                 return;
@@ -93,7 +96,11 @@ public class ReportsDialogBuilder {
         list.setItems(ReportType.values());
         list.setRenderer(driverEntityComponentRenderer);
 
-        VerticalLayout dialogLayout = new VerticalLayout(textField, datePickerFrom, datePickerTo, list);
+        reportPeriodComboBox.setItems(ReportPeriod.values());
+        reportPeriodComboBox.setItemLabelGenerator(ReportPeriod::name);
+        reportPeriodComboBox.setValue(ReportPeriod.DAY);
+
+        VerticalLayout dialogLayout = new VerticalLayout(textField, datePickerFrom, datePickerTo, reportPeriodComboBox, list);
         dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
         dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
 

@@ -115,13 +115,18 @@ public class TripService {
         }
     }
 
-    public TripsDto getAllTripsByVehicleIdForUI(long vehicleId) {
+    public TripsDto getAllTripsByVehicleIdForUI(long vehicleId, long dateFrom, long dateTo) {
         try {
             VehicleEntity vehicleEntity = vehiclesRepository.findById(vehicleId).orElse(null);
             if (vehicleEntity == null) return new TripsDto();
             EnterpriseEntity enterpriseEntity = enterprisesRepository.findById(vehicleEntity.getEnterpriseId()).orElse(null);
             if (enterpriseEntity == null) return new TripsDto();
-            List<TripEntity> tripEntities = tripRepository.getAllByVehicleId(vehicleId);
+            List<TripEntity> tripEntities;
+            if (dateFrom > 0 && dateTo > 0) {
+                tripEntities = tripRepository.getAllByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
+            } else {
+                tripEntities = tripRepository.getAllByVehicleId(vehicleId);
+            }
             if (tripEntities.size() == 0) return new TripsDto();
             List<TripDto> tripDtoList = new ArrayList<>();
             for (TripEntity tripEntity : tripEntities) {
