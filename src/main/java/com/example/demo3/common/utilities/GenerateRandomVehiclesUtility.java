@@ -1,5 +1,6 @@
 package com.example.demo3.common.utilities;
 
+import com.example.demo3.model.BrandType;
 import com.example.demo3.model.entity.*;
 import com.example.demo3.model.mock.CreateRandVehiclesInfoDto;
 import com.example.demo3.model.mock.MockObjectsCreator;
@@ -41,6 +42,12 @@ public class GenerateRandomVehiclesUtility {
 
     private List<VehicleEntity> fillVehicleEntities(CreateRandVehiclesInfoDto createRandVehiclesInfoDto) {
         List<BrandEntity> brandEntities = getBrandEntities();
+        if (brandEntities.size() == 0) {
+            brandsRepository.save(new BrandEntity("Brand Cargo", BrandType.CARGO, 60, 25, 2));
+            brandsRepository.save(new BrandEntity("Brand Bus", BrandType.BUS, 70, 15, 25));
+            brandsRepository.save(new BrandEntity("Brand Passenger", BrandType.PASSENGER, 50, 5, 5));
+            brandEntities = getBrandEntities();
+        }
         List<Long> enterprisesId = createRandVehiclesInfoDto.getEnterprises();
         List<VehicleEntity> vehicleEntities = new ArrayList<>();
         for (int i = 0; i < createRandVehiclesInfoDto.getVehiclesCount(); i++) {

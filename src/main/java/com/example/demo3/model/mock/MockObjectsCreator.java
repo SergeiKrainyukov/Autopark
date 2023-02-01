@@ -5,21 +5,21 @@ import com.example.demo3.model.entity.BrandEntity;
 import com.example.demo3.model.entity.DriverEntity;
 import com.example.demo3.model.entity.EnterpriseEntity;
 import com.example.demo3.model.entity.VehicleEntity;
+import com.example.demo3.repository.VehiclesRepository;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Calendar;
-import java.util.Random;
-import java.util.TimeZone;
+import java.util.*;
 
 @SpringComponent
 public class MockObjectsCreator {
 
     private final Random random = new Random();
+    private final VehiclesRepository vehiclesRepository;
 
     @Autowired
-    public MockObjectsCreator() {
-
+    public MockObjectsCreator(VehiclesRepository vehiclesRepository) {
+        this.vehiclesRepository = vehiclesRepository;
     }
 
     public EnterpriseEntity createMockEnterprise() {
@@ -37,11 +37,20 @@ public class MockObjectsCreator {
     }
 
     public VehicleEntity createMockVehicleForEnterpriseAndBrand(Long enterpriseId, Long brandId) {
-        return new VehicleEntity(createRandomPrice(), createRandomYear(), createRandomMileage(), enterpriseId, brandId, createRandomPurchaseDate());
+        return new VehicleEntity(createRandomStateNumber(), createRandomPrice(), createRandomYear(), createRandomMileage(), enterpriseId, brandId, createRandomPurchaseDate());
     }
 
-    public BrandEntity createMockBrand() {
-        return new BrandEntity("Brand " + createRandomString(8), createRandomBrandType(), createRandomTank(), createRandomLoadCapacity(), createRandomNumberOfSeats());
+    private Integer createRandomStateNumber() {
+        Set<Integer> stateNumbersSet = new HashSet<>();
+        Iterable<VehicleEntity> vehicleEntities = vehiclesRepository.findAll();
+        for (VehicleEntity vehicleEntity : vehicleEntities) {
+            stateNumbersSet.add(vehicleEntity.getStateNumber());
+        }
+        int number = random.nextInt(999_999);
+        while (stateNumbersSet.contains(number)) {
+            number = random.nextInt(999_999);
+        }
+        return number;
     }
 
     private String createRandomString(int length) {

@@ -32,6 +32,8 @@ public class RestController {
     private TripOnMapGenerationUtility tripOnMapGenerationUtility;
     @Autowired
     private ReportService reportService;
+    @Autowired
+    private MockObjectsCreator mockObjectsCreator;
 
     @GetMapping(
             path = "/vehicles",
@@ -59,7 +61,7 @@ public class RestController {
             path = "/createEnterprise/{managerId}",
             produces = "application/json")
     public EnterpriseEntity createMockEnterprise(@PathVariable Long managerId) {
-        EnterpriseEntity enterpriseEntity = new MockObjectsCreator().createMockEnterprise();
+        EnterpriseEntity enterpriseEntity = mockObjectsCreator.createMockEnterprise();
         EnterprisesCRUDService enterprisesCRUDService = ((EnterprisesCRUDService) crudServiceFactory.getService(ServiceType.ENTERPRISES_SERVICE));
         EnterpriseEntity createdEnterprise = enterprisesCRUDService.save(enterpriseEntity);
         ManagerEntity manager = managersRepository.findById(managerId).orElse(null);

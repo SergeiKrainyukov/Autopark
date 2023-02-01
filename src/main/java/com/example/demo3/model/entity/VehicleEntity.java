@@ -10,6 +10,8 @@ public class VehicleEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private Integer stateNumber;
+
     private Long brandId;
 
     private Long enterpriseId;
@@ -28,7 +30,8 @@ public class VehicleEntity {
     public VehicleEntity() {
     }
 
-    public VehicleEntity(Integer price, Integer year, Integer mileage, Long enterpriseId, Long brandId, Long purchaseDate) {
+    public VehicleEntity(Integer stateNumber, Integer price, Integer year, Integer mileage, Long enterpriseId, Long brandId, Long purchaseDate) {
+        this.stateNumber = stateNumber;
         this.price = price;
         this.year = year;
         this.mileage = mileage;
@@ -94,11 +97,12 @@ public class VehicleEntity {
         this.drivers = drivers;
     }
 
-    public String getStateNumber() {
-        char first = id.toString().charAt(0);
-        char second = year.toString().charAt(2);
-        char third = mileage.toString().charAt(0);
-        return new String(new char[]{first, second, third});
+    public Integer getStateNumber() {
+        return stateNumber;
+    }
+
+    public void setStateNumber(Integer stateNumber) {
+        this.stateNumber = stateNumber;
     }
 
     public Long getPurchaseDate() {

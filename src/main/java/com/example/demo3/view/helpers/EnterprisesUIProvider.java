@@ -56,7 +56,7 @@ public class EnterprisesUIProvider {
                 driverEntities.add(driverEntity);
             }
 
-            String vehicles = vehicleEntities.stream().map(VehicleEntity::getStateNumber).collect(Collectors.joining(", "));
+            String vehicles = vehicleEntities.stream().map(vehicleEntity -> vehicleEntity.getStateNumber().toString()).collect(Collectors.joining(", "));
             String drivers = driverEntities.stream().map(DriverEntity::getName).collect(Collectors.joining(", "));
 
             enterpriseUis.add(new EnterpriseUi(enterpriseEntity.getId(), name, city, vehicles, drivers));

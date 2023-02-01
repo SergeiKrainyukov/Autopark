@@ -1,7 +1,9 @@
 package com.example.demo3.view.dialogs;
 
+import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportType;
+import com.example.demo3.repository.VehiclesRepository;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -31,15 +33,16 @@ public class ReportsDialogBuilder {
 
     private static final String REPORT_TYPE_LABEL = "Report type: ";
     private static final String REPORT_PERIOD_LABEL = "Report period: ";
-    private static final String VEHICLE_ID_LABEL = "VehicleId: ";
+    private static final String VEHICLE_STATE_NUMBER_LABEL = "State Number: ";
     private static final String FROM_LABEL = "From";
     private static final String TO_LABEL = "To";
-    private final TextField textField = new TextField(VEHICLE_ID_LABEL);
+    private final TextField stateNumberField = new TextField(VEHICLE_STATE_NUMBER_LABEL);
     private final DatePicker datePickerFrom = new DatePicker(FROM_LABEL);
     private final DatePicker datePickerTo = new DatePicker(TO_LABEL);
     private final ComboBox<ReportPeriod> reportPeriodComboBox = new ComboBox<>(REPORT_PERIOD_LABEL);
 
     private MileageByPeriodReportDialogBuilder mileageByPeriodReportDialogBuilder;
+    private final VehiclesRepository vehiclesRepository;
 
     private final ComponentRenderer<Component, ReportType> driverEntityComponentRenderer = new ComponentRenderer<>(
             reportType -> {
@@ -52,13 +55,16 @@ public class ReportsDialogBuilder {
                 infoLayout.add(new Text(REPORT_TYPE_LABEL + reportType));
                 cardLayout.add(infoLayout);
                 cardLayout.addClickListener((ComponentEventListener<ClickEvent<HorizontalLayout>>) horizontalLayoutClickEvent -> {
-                    if (textField.getValue().isEmpty() || textField.getValue().isBlank()) return;
+                    if (stateNumberField.getValue().isEmpty() || stateNumberField.getValue().isBlank()) return;
                     switch (reportType) {
                         case MILEAGE_BY_PERIOD: {
                             try {
+                                if (datePickerFrom.getValue() == null || datePickerTo.getValue() == null) return;
                                 long dateFrom = datePickerFrom.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
                                 long dateTo = datePickerTo.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                                mileageByPeriodReportDialogBuilder.createDialogForShowingReports(Long.parseLong(textField.getValue()), dateFrom, dateTo, reportPeriodComboBox.getValue());
+                                Long vehicleId = getVehicleIdByStateNumber(Integer.parseInt(stateNumberField.getValue()));
+                                if (vehicleId < 0) return;
+                                mileageByPeriodReportDialogBuilder.createDialogForShowingReports(vehicleId, dateFrom, dateTo, reportPeriodComboBox.getValue());
                             } catch (Exception e) {
                                 System.out.println(e.getMessage());
                                 return;
@@ -74,8 +80,15 @@ public class ReportsDialogBuilder {
             });
 
     @Autowired
-    public ReportsDialogBuilder(MileageByPeriodReportDialogBuilder mileageByPeriodReportDialogBuilder) {
+    public ReportsDialogBuilder(MileageByPeriodReportDialogBuilder mileageByPeriodReportDialogBuilder, VehiclesRepository vehiclesRepository) {
         this.mileageByPeriodReportDialogBuilder = mileageByPeriodReportDialogBuilder;
+        this.vehiclesRepository = vehiclesRepository;
+    }
+
+    private Long getVehicleIdByStateNumber(Integer stateNumber) {
+        VehicleEntity vehicleEntity = vehiclesRepository.getAllByVehicleId(stateNumber);
+        if (vehicleEntity != null) return vehicleEntity.getId();
+        else return -1L;
     }
 
     public void createDialogForShowingReports() {
@@ -100,7 +113,7 @@ public class ReportsDialogBuilder {
         reportPeriodComboBox.setItemLabelGenerator(ReportPeriod::name);
         reportPeriodComboBox.setValue(ReportPeriod.DAY);
 
-        VerticalLayout dialogLayout = new VerticalLayout(textField, datePickerFrom, datePickerTo, reportPeriodComboBox, list);
+        VerticalLayout dialogLayout = new VerticalLayout(stateNumberField, datePickerFrom, datePickerTo, reportPeriodComboBox, list);
         dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
         dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
 

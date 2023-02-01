@@ -18,6 +18,7 @@ public class Strings {
     public static final String MILEAGE = "Mileage";
     public static final String NAME = "Name";
     public static final String CITY = "City";
+    public static final String STATE_NUMBER = "State number";
 
     public static final String NEW_VEHICLE = "New Vehicle";
     public static final String UPDATE_VEHICLE = "Update Vehicle";

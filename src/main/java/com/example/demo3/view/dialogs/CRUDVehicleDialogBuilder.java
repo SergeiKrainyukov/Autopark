@@ -73,6 +73,7 @@ public class CRUDVehicleDialogBuilder {
 
     private VerticalLayout createDialogLayout(List<EnterpriseUi> enterpriseUiList) {
 
+        TextField stateNumberField = new TextField(STATE_NUMBER);
         TextField priceField = new TextField(PRICE);
         TextField yearField = new TextField(YEAR);
         TextField mileageField = new TextField(MILEAGE);
@@ -93,12 +94,13 @@ public class CRUDVehicleDialogBuilder {
             enterpriseUiComboBox.addValueChangeListener(event -> vehicleEntity.setEnterpriseId(event.getValue().getId()));
         }
 
+        stateNumberField.setValue(vehicleEntity.getStateNumber() == null ? "" : vehicleEntity.getStateNumber().toString());
         priceField.setValue(vehicleEntity.getPrice() == null ? "" : vehicleEntity.getPrice().toString());
         yearField.setValue(vehicleEntity.getYear() == null ? "" : vehicleEntity.getYear().toString());
         mileageField.setValue(vehicleEntity.getMileage() == null ? "" : vehicleEntity.getMileage().toString());
         brandEntityComboBox.setValue(vehicleEntity.getBrandId() == null ? brandEntities.get(0) : findBrandById(vehicleEntity.getBrandId()));
         if (vehicleEntity.getBrandId() == null) vehicleEntity.setBrandId(brandEntities.get(0).getId());
-
+        stateNumberField.addValueChangeListener(event -> vehicleEntity.setStateNumber(Integer.valueOf(event.getValue())));
         priceField.addValueChangeListener(event -> vehicleEntity.setPrice(Integer.valueOf(event.getValue())));
         yearField.addValueChangeListener(event -> vehicleEntity.setYear(Integer.valueOf(event.getValue())));
         mileageField.addValueChangeListener(event -> vehicleEntity.setMileage(Integer.valueOf(event.getValue())));
@@ -107,10 +109,10 @@ public class CRUDVehicleDialogBuilder {
         VerticalLayout dialogLayout;
 
         if (enterpriseUiComboBox != null) {
-            dialogLayout = new VerticalLayout(enterpriseUiComboBox, priceField, yearField,
+            dialogLayout = new VerticalLayout(enterpriseUiComboBox, stateNumberField, priceField, yearField,
                     mileageField, brandEntityComboBox);
         } else {
-            dialogLayout = new VerticalLayout(priceField, yearField,
+            dialogLayout = new VerticalLayout(stateNumberField, priceField, yearField,
                     mileageField, brandEntityComboBox);
         }
 
