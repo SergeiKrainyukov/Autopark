@@ -30,6 +30,7 @@ Main functions:
 
 <img width="360" alt="Снимок экрана 2023-02-02 в 16 22 46" src="https://user-images.githubusercontent.com/109689615/216338115-1a69830f-06a2-45a2-9bef-bed6f7180a48.png">
 
-The system includes a telegram bot, which also generates a report on cars according to the specified parameters
+5. The system includes a telegram bot, which also generates a report on cars according to the specified parameters
 
-<img width="722" alt="Снимок экрана 2023-02-02 в 16 31 09" src="https://user-images.githubusercontent.com/109689615/216338341-36471e49-0e31-498e-97ed-cd66c5ab9090.png">
+<img width="715" alt="Снимок экрана 2023-02-02 в 16 37 43" src="https://user-images.githubusercontent.com/109689615/216339959-5a0a6cba-9a31-4f87-bb33-384e1a04fc86.png">
+
