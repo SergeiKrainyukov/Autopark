@@ -1,7 +1,9 @@
 # Autopark
 
 Educational project Autopark.
+
 Technologies: Spring Boot, Spring Security, Vaadin, MySql, telegrambots api. 
+
 The project is a web application for monitoring and recording car trips.
 
 Main functions:
