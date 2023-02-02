@@ -86,7 +86,7 @@ public class ReportsDialogBuilder {
     }
 
     private Long getVehicleIdByStateNumber(Integer stateNumber) {
-        VehicleEntity vehicleEntity = vehiclesRepository.getAllByVehicleId(stateNumber);
+        VehicleEntity vehicleEntity = vehiclesRepository.findVehicleByStateNumber(stateNumber);
         if (vehicleEntity != null) return vehicleEntity.getId();
         else return -1L;
     }
