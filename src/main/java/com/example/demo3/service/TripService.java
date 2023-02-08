@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @SpringComponent
 public class TripService {
@@ -50,14 +51,9 @@ public class TripService {
         this.vehiclesRepository = vehiclesRepository;
     }
 
-    public JSONObject getTrip(long vehicleId, String dateFrom, String dateTo) {
+    public JSONObject getTrip(List<TripEntity> tripEntities, List<GeoPointEntity> geoPointEntities) {
         try {
-            long startDate = getLongDate(dateFrom);
-            long endDate = getLongDate(dateTo);
-
-            List<TripEntity> tripEntities = tripRepository.getAllByVehicleIdAndDates(vehicleId, startDate, endDate);
-
-            if (tripEntities.size() == 0) return null;
+            if (tripEntities.size() == 0) return new JSONObject();
 
             long minStartDate = tripEntities.get(0).getStartDate();
             long maxEndDate = tripEntities.get(0).getEndDate();
@@ -70,13 +66,18 @@ public class TripService {
                     maxEndDate = tripEntity.getEndDate();
                 }
             }
-            List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllBetweenDates(minStartDate, maxEndDate));
-            return getGeoJson(geoPointEntities);
+            return getGeoJson(filterGeopointsByDates(geoPointEntities, minStartDate, maxEndDate));
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }
+    }
+
+    private List<GeoPointEntity> filterGeopointsByDates(List<GeoPointEntity> geoPointEntities, long startDate, long endDate) {
+        return geoPointEntities.stream()
+                .filter(geoPointEntity -> geoPointEntity.getDate() >= startDate && geoPointEntity.getDate() <= endDate)
+                .collect(Collectors.toList());
     }
 
     public TripsDto getAllTripsByVehicleIdAndDates(long vehicleId, String dateFrom, String dateTo) {
@@ -92,7 +93,7 @@ public class TripService {
             if (tripEntities.size() == 0) return null;
             List<TripDto> tripDtoList = new ArrayList<>();
             for (TripEntity tripEntity : tripEntities) {
-                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(vehicleId, tripEntity.getStartDate(), tripEntity.getEndDate()));
+                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate(), vehicleId));
                 if (geoPointEntities.size() == 0) continue;
                 GeoPointEntity firstGeopointEntity = geoPointEntities.get(0);
                 GeoPointEntity lastGeopointEntity = geoPointEntities.get(geoPointEntities.size() - 1);

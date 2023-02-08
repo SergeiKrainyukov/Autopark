@@ -1,18 +1,21 @@
 package com.example.demo3.controller;
 
+import com.example.demo3.common.Constants;
 import com.example.demo3.common.utilities.GenerateRandomVehiclesUtility;
 import com.example.demo3.common.utilities.TripOnMapGenerationUtility;
 import com.example.demo3.model.dto.*;
-import com.example.demo3.model.entity.EnterpriseEntity;
-import com.example.demo3.model.entity.ManagerEntity;
-import com.example.demo3.model.entity.VehicleEntity;
+import com.example.demo3.model.entity.*;
 import com.example.demo3.model.mock.CreateRandVehiclesInfoDto;
 import com.example.demo3.model.mock.MockObjectsCreator;
 import com.example.demo3.repository.ManagersRepository;
 import com.example.demo3.service.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @org.springframework.web.bind.annotation.RestController
@@ -34,6 +37,8 @@ public class RestController {
     private ReportService reportService;
     @Autowired
     private MockObjectsCreator mockObjectsCreator;
+    @Autowired
+    private DatabaseController databaseController;
 
     @GetMapping(
             path = "/vehicles",
@@ -119,7 +124,10 @@ public class RestController {
             @RequestParam(value = "dateFrom", defaultValue = "") String dateFrom,
             @RequestParam(value = "dateTo", defaultValue = "") String dateTo
     ) {
-        return tripService.getTrip(vehicleId, dateFrom, dateTo).toMap();
+        List<TripEntity> tripEntityList = databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
+        List<GeoPointEntity> geoPointEntities = databaseController.getAllGeopoints();
+        JSONObject jsonObject = tripService.getTrip(tripEntityList, geoPointEntities);
+        return jsonObject.toMap();
     }
 
     @GetMapping("/trips")
