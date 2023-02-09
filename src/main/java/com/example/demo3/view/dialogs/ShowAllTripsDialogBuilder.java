@@ -1,6 +1,10 @@
 package com.example.demo3.view.dialogs;
 
+import com.example.demo3.controller.DatabaseController;
 import com.example.demo3.model.dto.TripDto;
+import com.example.demo3.model.dto.TripsDto;
+import com.example.demo3.model.entity.GeoPointEntity;
+import com.example.demo3.model.entity.TripEntity;
 import com.example.demo3.repository.GeoPointRepository;
 import com.example.demo3.service.TripService;
 import com.vaadin.flow.component.ClickEvent;
@@ -21,9 +25,13 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 import static com.example.demo3.common.Strings.OK_BUTTON;
+import static com.example.demo3.common.Strings.RELOAD_BUTTON;
 
 @SpringComponent
 @UIScope
@@ -35,6 +43,8 @@ public class ShowAllTripsDialogBuilder {
     private static final String START_DATE = "Start Date";
     private static final String END_DATE = "End Date";
     private static final String TRIP_TITLE = "----------Trip----------";
+    public static final long DEFAULT_TO_TIME = 99999999999999L;
+    public static final long DEFAULT_DAY_MILLIS = 86400000;
 
     private final VirtualList<TripDto> list = new VirtualList<>();
 
@@ -42,6 +52,7 @@ public class ShowAllTripsDialogBuilder {
 
     private final TripService tripService;
     private final GeoPointRepository geoPointRepository;
+    private final DatabaseController databaseController;
 
     private final ComponentRenderer<Component, TripDto> tripComponentRenderer = new ComponentRenderer<>(
             tripDto -> {
@@ -65,10 +76,11 @@ public class ShowAllTripsDialogBuilder {
                 return cardLayout;
             });
 
-    public ShowAllTripsDialogBuilder(Long vehicleId, TripService tripService, GeoPointRepository geoPointRepository) {
+    public ShowAllTripsDialogBuilder(Long vehicleId, TripService tripService, GeoPointRepository geoPointRepository, DatabaseController databaseController) {
         this.vehicleId = vehicleId;
         this.tripService = tripService;
         this.geoPointRepository = geoPointRepository;
+        this.databaseController = databaseController;
     }
 
     private void showMapDialog(TripDto tripDto) {
@@ -83,12 +95,14 @@ public class ShowAllTripsDialogBuilder {
 
         DatePicker startDatePicker = new DatePicker(START_DATE);
         DatePicker endDatePicker = new DatePicker(END_DATE);
-        Button reloadButton = new Button("Reload");
+        Button reloadButton = new Button(RELOAD_BUTTON);
         reloadButton.addClickListener(event -> {
             if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) return;
             long startDate = startDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
             long endDate = endDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-            list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId, startDate, endDate).getTrips());
+            if (startDate == endDate) {
+                list.setItems(getTripsFromDatabase(vehicleId, startDate, endDate + DEFAULT_DAY_MILLIS - 1));
+            } else list.setItems(getTripsFromDatabase(vehicleId, startDate, endDate));
         });
         dialog.add(startDatePicker, endDatePicker, reloadButton, dialogLayout);
 
@@ -98,8 +112,7 @@ public class ShowAllTripsDialogBuilder {
     }
 
     private VerticalLayout createDialogLayout(Long vehicleId) {
-
-        list.setItems(tripService.getAllTripsByVehicleIdForUI(vehicleId, 0, 0).getTrips());
+        list.setItems(getTripsFromDatabase(vehicleId, 0, DEFAULT_TO_TIME));
         list.setRenderer(tripComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
@@ -107,5 +120,15 @@ public class ShowAllTripsDialogBuilder {
         dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
 
         return dialogLayout;
+    }
+
+    private List<TripDto> getTripsFromDatabase(Long vehicleId, long startDate, long endDate) {
+        List<TripEntity> tripEntities = databaseController.getAllTripsByVehicleIdAndDates(vehicleId, startDate, endDate);
+        List<GeoPointEntity> geoPointEntities = databaseController.getAllGeopointsByVehicleIdAndDates(vehicleId, startDate, endDate);
+        if (tripEntities.size() != 0 && geoPointEntities.size() != 0) {
+            return tripService.getAllTripsByVehicleIdAndDates(TimeZone.getDefault(), tripEntities, geoPointEntities).getTrips();
+        } else {
+            return new ArrayList<>();
+        }
     }
 }

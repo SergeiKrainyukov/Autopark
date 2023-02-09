@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 @org.springframework.web.bind.annotation.RestController
 @RequestMapping(path = "/")
@@ -132,11 +133,17 @@ public class RestController {
 
     @GetMapping("/trips")
     public TripsDto getTrips(
-            @RequestParam(value = "vehicleId", defaultValue = "0") int vehicleId,
+            @RequestParam(value = "vehicleId", defaultValue = "0") long vehicleId,
             @RequestParam(value = "dateFrom", defaultValue = "") String dateFrom,
             @RequestParam(value = "dateTo", defaultValue = "") String dateTo
     ) {
-        return tripService.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
+        EnterpriseEntity enterpriseEntity = databaseController.getEnterpriseByVehicleId(vehicleId);
+        if (enterpriseEntity == null) return new TripsDto();
+        List<TripEntity> tripEntities = databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
+        if (tripEntities.size() == 0) return new TripsDto();
+        List<GeoPointEntity> geoPointEntities = databaseController.getAllGeopointsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
+        if (geoPointEntities.size() == 0) return new TripsDto();
+        return tripService.getAllTripsByVehicleIdAndDates(TimeZone.getTimeZone(enterpriseEntity.getTimeZone()), tripEntities, geoPointEntities);
     }
 
     @PostMapping("/generateTrip")

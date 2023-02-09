@@ -12,6 +12,7 @@ public class Strings {
     public static final String OK_BUTTON = "OK";
     public static final String REPORTS_BUTTON = "Reports";
     public static final String SHOW_ALL_BUTTON = "Show All";
+    public static final String RELOAD_BUTTON = "Reload";
 
     public static final String PRICE = "Price";
     public static final String YEAR = "Year";

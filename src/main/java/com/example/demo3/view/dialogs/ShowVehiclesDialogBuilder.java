@@ -1,5 +1,6 @@
 package com.example.demo3.view.dialogs;
 
+import com.example.demo3.controller.DatabaseController;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.repository.BrandsRepository;
 import com.example.demo3.repository.GeoPointRepository;
@@ -52,13 +53,15 @@ public class ShowVehiclesDialogBuilder {
     private final BrandsRepository brandsRepository;
     private final TripService tripService;
     private final GeoPointRepository geoPointRepository;
+    private final DatabaseController databaseController;
 
     @Autowired
-    public ShowVehiclesDialogBuilder(VehiclesRepository vehiclesRepository, BrandsRepository brandsRepository, TripService tripService, GeoPointRepository geoPointRepository) {
+    public ShowVehiclesDialogBuilder(VehiclesRepository vehiclesRepository, BrandsRepository brandsRepository, TripService tripService, GeoPointRepository geoPointRepository, DatabaseController databaseController) {
         this.vehiclesRepository = vehiclesRepository;
         this.brandsRepository = brandsRepository;
         this.tripService = tripService;
         this.geoPointRepository = geoPointRepository;
+        this.databaseController = databaseController;
     }
 
     public void createDialogForShowingVehicles(EnterpriseUi enterpriseUi) {
@@ -116,7 +119,7 @@ public class ShowVehiclesDialogBuilder {
 
                     Button routesButton = new Button(new Icon(VaadinIcon.ROAD));
                     routesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-                        new ShowAllTripsDialogBuilder(vehicle.getId(), tripService, geoPointRepository).createTripsDialog();
+                        new ShowAllTripsDialogBuilder(vehicle.getId(), tripService, geoPointRepository, databaseController).createTripsDialog();
                         dialog.close();
                     });
                     Button updateVehicleButton = new Button(new Icon(VaadinIcon.PENCIL));

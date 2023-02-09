@@ -2,14 +2,8 @@ package com.example.demo3.service;
 
 import com.example.demo3.model.dto.TripDto;
 import com.example.demo3.model.dto.TripsDto;
-import com.example.demo3.model.entity.EnterpriseEntity;
 import com.example.demo3.model.entity.GeoPointEntity;
 import com.example.demo3.model.entity.TripEntity;
-import com.example.demo3.model.entity.VehicleEntity;
-import com.example.demo3.repository.EnterprisesRepository;
-import com.example.demo3.repository.GeoPointRepository;
-import com.example.demo3.repository.TripRepository;
-import com.example.demo3.repository.VehiclesRepository;
 import com.google.appengine.api.search.GeoPoint;
 import com.nimbusds.jose.shaded.json.parser.JSONParser;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -20,7 +14,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -31,25 +24,12 @@ import java.util.stream.Collectors;
 @SpringComponent
 public class TripService {
 
-    private final TripRepository tripRepository;
-    private final GeoPointRepository geoPointRepository;
-    private final EnterprisesRepository enterprisesRepository;
-    private final VehiclesRepository vehiclesRepository;
-
     private static final String dateFormatPattern = "dd.MM.yyyy HH:mm:ss";
 
     private static final String API_KEY = "pk.eyJ1Ijoic2VyZ2Vpa3JhaSIsImEiOiJjbGJuaDgxOHAwYTcxM29sOGtra3owdWplIn0.JlUr7-JutfgiO0vadGOHRQ";
     private static final String URL = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
     private static final String ACCESS_TOKEN_PARAMETER = ".json?access_token=";
     private static final char COMMA_SEPARATOR = ',';
-
-    @Autowired
-    public TripService(TripRepository tripRepository, GeoPointRepository geoPointRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository) {
-        this.tripRepository = tripRepository;
-        this.geoPointRepository = geoPointRepository;
-        this.enterprisesRepository = enterprisesRepository;
-        this.vehiclesRepository = vehiclesRepository;
-    }
 
     public JSONObject getTrip(List<TripEntity> tripEntities, List<GeoPointEntity> geoPointEntities) {
         try {
@@ -80,29 +60,23 @@ public class TripService {
                 .collect(Collectors.toList());
     }
 
-    public TripsDto getAllTripsByVehicleIdAndDates(long vehicleId, String dateFrom, String dateTo) {
+    public TripsDto getAllTripsByVehicleIdAndDates(TimeZone enterpriseTimeZone, List<TripEntity> tripEntitiesByVehicleIdBetweenDates, List<GeoPointEntity> allGeoPointsByVehicleIdAndDates) {
         try {
-            VehicleEntity vehicleEntity = vehiclesRepository.findById(vehicleId).orElse(null);
-            if (vehicleEntity == null) return null;
-            EnterpriseEntity enterpriseEntity = enterprisesRepository.findById(vehicleEntity.getEnterpriseId()).orElse(null);
-            if (enterpriseEntity == null) return null;
-
-            long startDate = getLongDate(dateFrom);
-            long endDate = getLongDate(dateTo);
-            List<TripEntity> tripEntities = tripRepository.getAllByVehicleIdAndDates(vehicleId, startDate, endDate);
-            if (tripEntities.size() == 0) return null;
+            if (tripEntitiesByVehicleIdBetweenDates.size() == 0) return new TripsDto();
+            long vehicleId = tripEntitiesByVehicleIdBetweenDates.get(0).getVehicleId();
             List<TripDto> tripDtoList = new ArrayList<>();
-            for (TripEntity tripEntity : tripEntities) {
-                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate(), vehicleId));
+            for (TripEntity tripEntity : tripEntitiesByVehicleIdBetweenDates) {
+                List<GeoPointEntity> geoPointEntities = allGeoPointsByVehicleIdAndDates.stream().filter(geoPointEntity -> geoPointEntity.getVehicleId() == vehicleId && geoPointEntity.getDate() >= tripEntity.getStartDate() && geoPointEntity.getDate() <= tripEntity.getEndDate()).collect(Collectors.toList());
                 if (geoPointEntities.size() == 0) continue;
+
                 GeoPointEntity firstGeopointEntity = geoPointEntities.get(0);
                 GeoPointEntity lastGeopointEntity = geoPointEntities.get(geoPointEntities.size() - 1);
 
                 GeoPoint startGeoPoint = new GeoPoint(firstGeopointEntity.getGeoPoint().getX(), firstGeopointEntity.getGeoPoint().getY());
                 GeoPoint endGeoPoint = new GeoPoint(lastGeopointEntity.getGeoPoint().getX(), lastGeopointEntity.getGeoPoint().getY());
 
-                String startDateFormatted = getZonedTimeStringFormatted(TimeZone.getTimeZone(enterpriseEntity.getTimeZone()), tripEntity.getStartDate());
-                String endDateFormatted = getZonedTimeStringFormatted(TimeZone.getTimeZone(enterpriseEntity.getTimeZone()), tripEntity.getEndDate());
+                String startDateFormatted = getZonedTimeStringFormatted(enterpriseTimeZone, tripEntity.getStartDate());
+                String endDateFormatted = getZonedTimeStringFormatted(enterpriseTimeZone, tripEntity.getEndDate());
 
                 String startPlaceName = requestPlace(URL + startGeoPoint.getLatitude() + COMMA_SEPARATOR + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
                 String endPlaceName = requestPlace(URL + endGeoPoint.getLatitude() + COMMA_SEPARATOR + endGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
@@ -113,45 +87,6 @@ public class TripService {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
-        }
-    }
-
-    public TripsDto getAllTripsByVehicleIdForUI(long vehicleId, long dateFrom, long dateTo) {
-        try {
-            VehicleEntity vehicleEntity = vehiclesRepository.findById(vehicleId).orElse(null);
-            if (vehicleEntity == null) return new TripsDto();
-            EnterpriseEntity enterpriseEntity = enterprisesRepository.findById(vehicleEntity.getEnterpriseId()).orElse(null);
-            if (enterpriseEntity == null) return new TripsDto();
-            List<TripEntity> tripEntities;
-            if (dateFrom > 0 && dateTo > 0) {
-                tripEntities = tripRepository.getAllByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
-            } else {
-                tripEntities = tripRepository.getAllByVehicleId(vehicleId);
-            }
-            if (tripEntities.size() == 0) return new TripsDto();
-            List<TripDto> tripDtoList = new ArrayList<>();
-            for (TripEntity tripEntity : tripEntities) {
-                List<GeoPointEntity> geoPointEntities = new ArrayList<>(geoPointRepository.findAllByVehicleIdBetweenDates(tripEntity.getStartDate(), tripEntity.getEndDate(), vehicleId));
-                if (geoPointEntities.size() == 0) continue;
-
-                GeoPointEntity firstGeopointEntity = geoPointEntities.get(0);
-                GeoPointEntity lastGeopointEntity = geoPointEntities.get(geoPointEntities.size() - 1);
-
-                GeoPoint startGeoPoint = new GeoPoint(firstGeopointEntity.getGeoPoint().getX(), firstGeopointEntity.getGeoPoint().getY());
-                GeoPoint endGeoPoint = new GeoPoint(lastGeopointEntity.getGeoPoint().getX(), lastGeopointEntity.getGeoPoint().getY());
-
-                String startDateFormatted = getZonedTimeStringFormatted(TimeZone.getDefault(), tripEntity.getStartDate());
-                String endDateFormatted = getZonedTimeStringFormatted(TimeZone.getDefault(), tripEntity.getEndDate());
-
-                String startPlaceName = requestPlace(URL + startGeoPoint.getLatitude() + COMMA_SEPARATOR + startGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
-                String endPlaceName = requestPlace(URL + endGeoPoint.getLatitude() + COMMA_SEPARATOR + endGeoPoint.getLongitude() + ACCESS_TOKEN_PARAMETER + API_KEY);
-
-                tripDtoList.add(new TripDto(tripEntity.getStartDate(), tripEntity.getEndDate(), startDateFormatted, endDateFormatted, startGeoPoint, startPlaceName, endGeoPoint, endPlaceName));
-            }
-            return new TripsDto(tripDtoList);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new TripsDto();
         }
     }
 
@@ -187,11 +122,6 @@ public class TripService {
             featureCollection.put("features", features);
         }
         return featureCollection;
-    }
-
-    private Long getLongDate(String date) throws Exception {
-        Date parsedDate = new SimpleDateFormat(dateFormatPattern).parse(date);
-        return parsedDate.getTime();
     }
 
     private String getZonedTimeStringFormatted(TimeZone timezone, Long dateMillis) {
