@@ -14,6 +14,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -21,17 +24,23 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Configuration
+@PropertySource("classpath:application.properties")
 @SpringComponent
 public class TripService {
 
     private static final String dateFormatPattern = "dd.MM.yyyy HH:mm:ss";
 
-    private static final String API_KEY = "pk.eyJ1Ijoic2VyZ2Vpa3JhaSIsImEiOiJjbGJuaDgxOHAwYTcxM29sOGtra3owdWplIn0.JlUr7-JutfgiO0vadGOHRQ";
-    private static final String URL = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
-    private static final String ACCESS_TOKEN_PARAMETER = ".json?access_token=";
+    @Value("${map_box_api_key}")
+    private String API_KEY;
+    @Value("${map_box_url}")
+    private String URL;
+    @Value("${access_token_parameter}")
+    private String ACCESS_TOKEN_PARAMETER;
+
     private static final char COMMA_SEPARATOR = ',';
 
-    public JSONObject getTrip(List<TripEntity> tripEntities, List<GeoPointEntity> geoPointEntities) {
+    public JSONObject getTripAsJSON(List<TripEntity> tripEntities, List<GeoPointEntity> geoPointEntities) {
         try {
             if (tripEntities.size() == 0) return new JSONObject();
 
@@ -91,7 +100,6 @@ public class TripService {
     }
 
     private JSONObject getGeoJson(List<GeoPointEntity> geoPointEntities) {
-
         JSONObject featureCollection = new JSONObject();
         featureCollection.put("type", "FeatureCollection");
         JSONObject properties = new JSONObject();
@@ -102,7 +110,6 @@ public class TripService {
         featureCollection.put("crs", crs);
 
         JSONArray features = new JSONArray();
-
 
         for (GeoPointEntity geoPointEntity : geoPointEntities) {
             JSONObject feature = new JSONObject();

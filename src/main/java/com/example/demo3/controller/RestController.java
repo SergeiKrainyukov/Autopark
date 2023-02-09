@@ -1,6 +1,5 @@
 package com.example.demo3.controller;
 
-import com.example.demo3.common.Constants;
 import com.example.demo3.common.utilities.GenerateRandomVehiclesUtility;
 import com.example.demo3.common.utilities.TripOnMapGenerationUtility;
 import com.example.demo3.model.dto.*;
@@ -13,8 +12,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -127,7 +124,7 @@ public class RestController {
     ) {
         List<TripEntity> tripEntityList = databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
         List<GeoPointEntity> geoPointEntities = databaseController.getAllGeopoints();
-        JSONObject jsonObject = tripService.getTrip(tripEntityList, geoPointEntities);
+        JSONObject jsonObject = tripService.getTripAsJSON(tripEntityList, geoPointEntities);
         return jsonObject.toMap();
     }
 
