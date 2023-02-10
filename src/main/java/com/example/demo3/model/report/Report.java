@@ -1,5 +1,7 @@
 package com.example.demo3.model.report;
 
+import com.example.demo3.model.entity.TripEntity;
+
 import java.util.List;
 
 public class Report {
@@ -50,7 +52,7 @@ public class Report {
         this.dateTo = dateTo;
     }
 
-    public List<ReportResult> getResult() {
+    public List<ReportResult> getResult(List<TripEntity> allTripsByVehicleIdAndDates) {
         return result;
     }
 

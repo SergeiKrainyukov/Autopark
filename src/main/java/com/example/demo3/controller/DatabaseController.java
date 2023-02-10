@@ -45,7 +45,7 @@ public class DatabaseController {
     }
 
     public List<GeoPointEntity> getAllGeopointsByVehicleIdAndDates(long vehicleId, String startDate, String endDate) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FORMAT_PATTERN);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FORMAT_PATTERN_EXTENDED);
         long dateFromInMillis;
         long dateToInMillis;
         try {
@@ -76,7 +76,7 @@ public class DatabaseController {
     }
 
     public List<TripEntity> getAllTripsByVehicleIdAndDates(long vehicleId, String startDate, String endDate) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FORMAT_PATTERN);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FORMAT_PATTERN_EXTENDED);
         long dateFromInMillis;
         long dateToInMillis;
         try {

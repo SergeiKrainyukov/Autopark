@@ -1,9 +1,9 @@
 package com.example.demo3.view.dialogs;
 
+import com.example.demo3.controller.DatabaseController;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportResult;
-import com.example.demo3.repository.TripRepository;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -26,7 +26,7 @@ import static com.example.demo3.common.Strings.OK_BUTTON;
 @UIScope
 public class MileageByPeriodReportDialogBuilder {
 
-    private final TripRepository tripRepository;
+    private final DatabaseController databaseController;
 
     private final ComponentRenderer<Component, ReportResult> driverEntityComponentRenderer = new ComponentRenderer<>(
             result -> {
@@ -43,8 +43,8 @@ public class MileageByPeriodReportDialogBuilder {
             });
 
     @Autowired
-    public MileageByPeriodReportDialogBuilder(TripRepository tripRepository) {
-        this.tripRepository = tripRepository;
+    public MileageByPeriodReportDialogBuilder(DatabaseController databaseController) {
+        this.databaseController = databaseController;
     }
 
     public void createDialogForShowingReports(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
@@ -72,8 +72,9 @@ public class MileageByPeriodReportDialogBuilder {
         return dialogLayout;
     }
 
+    //TODO: Нужно поправить работу с датами, чтобы было с 0:00, а не с текущего времени
     private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
-        return new MileageByPeriodReport(reportPeriod, dateFrom, dateTo, vehicleId, tripRepository).getResult();
+        return new MileageByPeriodReport(reportPeriod, dateFrom, dateTo).getResult(databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo));
     }
 
 

@@ -1,6 +1,8 @@
 package com.example.demo3.bot;
 
+import com.example.demo3.controller.DatabaseController;
 import com.example.demo3.model.entity.ManagerEntity;
+import com.example.demo3.model.entity.TripEntity;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
@@ -33,13 +35,13 @@ public class Bot extends TelegramLongPollingBot {
 
     private final ManagersRepository managersRepository;
     private final VehiclesRepository vehiclesRepository;
-    private final TripRepository tripRepository;
+    private final DatabaseController databaseController;
 
-    public Bot(BotConfig config, ManagersRepository managersRepository, VehiclesRepository vehiclesRepository, TripRepository tripRepository) {
+    public Bot(BotConfig config, ManagersRepository managersRepository, VehiclesRepository vehiclesRepository, DatabaseController databaseController) {
         this.config = config;
         this.managersRepository = managersRepository;
         this.vehiclesRepository = vehiclesRepository;
-        this.tripRepository = tripRepository;
+        this.databaseController = databaseController;
     }
 
     public void onUpdateReceived(Update update) {
@@ -156,7 +158,8 @@ public class Bot extends TelegramLongPollingBot {
                         execute(builder.build());
                         return;
                     }
-                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.DAY, dateFrom.getTime(), dateTo.getTime(), vehicleEntity.getId(), tripRepository).getResult();
+                    List<TripEntity> tripsByVehicleIdAndDates = databaseController.getAllTripsByVehicleIdAndDates(vehicleEntity.getId(), dateFrom.getTime(), dateTo.getTime());
+                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.DAY, dateFrom.getTime(), dateTo.getTime()).getResult(tripsByVehicleIdAndDates);
                     int mileageByDay = 0;
                     for (ReportResult reportResult : reportResultList) {
                         mileageByDay += Integer.parseInt(reportResult.getValue());
@@ -181,7 +184,8 @@ public class Bot extends TelegramLongPollingBot {
                         execute(builder.build());
                         return;
                     }
-                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.DAY, dateFrom.getTime(), dateTo.getTime(), vehicleEntity.getId(), tripRepository).getResult();
+                    List<TripEntity> tripsByVehicleIdAndDates = databaseController.getAllTripsByVehicleIdAndDates(vehicleEntity.getId(), dateFrom.getTime(), dateTo.getTime());
+                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.MONTH, dateFrom.getTime(), dateTo.getTime()).getResult(tripsByVehicleIdAndDates);
                     double mileageByPeriod = 0;
                     for (ReportResult reportResult : reportResultList) {
                         mileageByPeriod += Double.parseDouble(reportResult.getValue());

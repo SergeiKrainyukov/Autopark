@@ -1,47 +1,33 @@
 package com.example.demo3.model.report;
 
 import com.example.demo3.model.entity.TripEntity;
-import com.example.demo3.repository.TripRepository;
-import com.vaadin.flow.spring.annotation.SpringComponent;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@SpringComponent
+import static com.example.demo3.common.Constants.DATE_FORMAT_PATTERN_BASE;
+
 public class MileageByPeriodReport extends Report {
 
-    private TripRepository tripRepository;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT_PATTERN_BASE);
+    private final Calendar calendarFrom = new GregorianCalendar();
+    private final Calendar calendarTo = new GregorianCalendar();
 
-    private Long vehicleId;
-
-    public MileageByPeriodReport() {
-    }
-
-    public MileageByPeriodReport(ReportPeriod period, long dateFrom, long dateTo, Long vehicleId, TripRepository tripRepository) {
+    public MileageByPeriodReport(ReportPeriod period, long dateFrom, long dateTo) {
         super(period, dateFrom, dateTo);
-        this.vehicleId = vehicleId;
         setReportType(ReportType.MILEAGE_BY_PERIOD);
-        this.tripRepository = tripRepository;
     }
 
     @Override
-    public List<ReportResult> getResult() {
+    public List<ReportResult> getResult(List<TripEntity> tripsByVehicleIdAndDates) {
         List<ReportResult> reportResults = new ArrayList<>();
-        int totalDistance = calculateDistance(getDateFrom(), getDateTo(), vehicleId);
+        int totalDistance = calculateDistance(tripsByVehicleIdAndDates);
 
-        Date dateFrom = new Date(getDateFrom());
-        Date dateTo = new Date(getDateTo());
-
-        Calendar calendarFrom = new GregorianCalendar();
-        calendarFrom.setTime(dateFrom);
-
-        Calendar calendarTo = new GregorianCalendar();
-        calendarTo.setTime(dateTo);
+        calendarFrom.setTime(new Date(getDateFrom()));
+        calendarTo.setTime(new Date(getDateTo()));
 
         LocalDate startDate = LocalDate.of(calendarFrom.get(Calendar.YEAR), calendarFrom.get(Calendar.MONTH) + 1, calendarFrom.get(Calendar.DAY_OF_MONTH));
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         long difference = getDateTo() - getDateFrom();
 
@@ -64,10 +50,9 @@ public class MileageByPeriodReport extends Report {
         return reportResults;
     }
 
-    private int calculateDistance(long dateFrom, long dateTo, Long vehicleId) {
+    private int calculateDistance(List<TripEntity> tripsByVehicleIdAndDates) {
         int distanceSum = 0;
-        List<TripEntity> tripEntities = tripRepository.getAllByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
-        for (TripEntity tripEntity : tripEntities) {
+        for (TripEntity tripEntity : tripsByVehicleIdAndDates) {
             distanceSum += tripEntity.getDistance();
         }
         return distanceSum;

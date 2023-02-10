@@ -2,29 +2,23 @@ package com.example.demo3.service;
 
 import com.example.demo3.model.dto.ReportDto;
 import com.example.demo3.model.dto.ReportInfoDto;
+import com.example.demo3.model.entity.TripEntity;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
-import com.example.demo3.repository.TripRepository;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @SpringComponent
 public class ReportService {
 
-    private final TripRepository tripRepository;
-
-    @Autowired
-    public ReportService(TripRepository tripRepository) {
-        this.tripRepository = tripRepository;
-    }
-
-    public ReportDto getReport(ReportInfoDto reportInfoDto) {
+    public ReportDto getReport(ReportInfoDto reportInfoDto, List<TripEntity> tripsByVehicleIdAndDates) {
         switch (reportInfoDto.getType()) {
-            default:
-                return new ReportDto(new MileageByPeriodReport(parseReportPeriod(reportInfoDto.getPeriod()), getLongDate(reportInfoDto.getStringDateFrom()), getLongDate(reportInfoDto.getStringDateTo()), reportInfoDto.getVehicleId(), tripRepository).getResult());
+            default: {
+                return new ReportDto(new MileageByPeriodReport(parseReportPeriod(reportInfoDto.getPeriod()), getLongDate(reportInfoDto.getStringDateFrom()), getLongDate(reportInfoDto.getStringDateTo())).getResult(tripsByVehicleIdAndDates));
+            }
         }
     }
 

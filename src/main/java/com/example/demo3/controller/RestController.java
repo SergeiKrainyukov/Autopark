@@ -152,7 +152,8 @@ public class RestController {
     public ReportDto getReport(
             @RequestBody ReportInfoDto reportInfoDto
     ) {
-        return reportService.getReport(reportInfoDto);
+        List<TripEntity> tripsByVehicleIdAndDates = databaseController.getAllTripsByVehicleIdAndDates(reportInfoDto.getVehicleId(), reportInfoDto.getStringDateFrom(), reportInfoDto.getStringDateTo());
+        return reportService.getReport(reportInfoDto, tripsByVehicleIdAndDates);
     }
 }
 
