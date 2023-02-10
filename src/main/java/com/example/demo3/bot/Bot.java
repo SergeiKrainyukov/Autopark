@@ -8,7 +8,6 @@ import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportResult;
 import com.example.demo3.repository.ManagersRepository;
-import com.example.demo3.repository.TripRepository;
 import com.example.demo3.repository.VehiclesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
