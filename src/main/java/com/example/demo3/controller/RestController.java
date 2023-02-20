@@ -42,7 +42,7 @@ public class RestController {
             path = "/vehicles",
             produces = "application/json")
     public VehiclesDto getVehicles() {
-        return ((VehiclesCRUDService) crudServiceFactory.getService(ServiceType.VEHICLES_SERVICE)).getAllWithDto();
+        return databaseController.getAllVehiclesDto();
     }
 
     @GetMapping(
@@ -50,7 +50,7 @@ public class RestController {
             produces = "application/json")
     public VehiclesDto getVehiclesPaging(@RequestParam(value = "page", defaultValue = "0") int page,
                                          @RequestParam(value = "limit", defaultValue = "3") int limit) {
-        return ((VehiclesCRUDService) crudServiceFactory.getService(ServiceType.VEHICLES_SERVICE)).getAllWithDtoLimited(page, limit);
+        return databaseController.getAllWithDtoLimited(page, limit);
     }
 
     @GetMapping(
@@ -84,7 +84,7 @@ public class RestController {
 
     @PostMapping("/createVehicle")
     public VehicleEntity createVehicle(@RequestBody VehicleEntity vehicleEntity) {
-        return ((VehiclesCRUDService) crudServiceFactory.getService(ServiceType.VEHICLES_SERVICE)).save(vehicleEntity);
+        return databaseController.saveVehicle(vehicleEntity);
     }
 
     @PostMapping("/createRandomVehicles")
@@ -94,12 +94,12 @@ public class RestController {
 
     @PutMapping("/updateVehicle/{id}")
     public VehicleEntity updateVehicle(@RequestBody VehicleEntity updatedVehicleEntity, @PathVariable Long id) {
-        return ((VehiclesCRUDService) crudServiceFactory.getService(ServiceType.VEHICLES_SERVICE)).update(updatedVehicleEntity, id);
+        return databaseController.updateVehicle(updatedVehicleEntity, id);
     }
 
     @DeleteMapping("/deleteVehicle/{id}")
     public void deleteVehicle(@PathVariable Long id) {
-        crudServiceFactory.getService(ServiceType.VEHICLES_SERVICE).deleteById(id);
+        databaseController.deleteVehicleById(id);
     }
 
     @GetMapping("/geopoints")
