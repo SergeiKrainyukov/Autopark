@@ -14,4 +14,11 @@ public class EnterprisesDto {
         }
         return enterprises;
     }
+
+    public void addEnterprise(EnterpriseEntity enterpriseEntity) {
+        if (enterprises == null) {
+            enterprises = new ArrayList<>();
+        }
+        enterprises.add(enterpriseEntity);
+    }
 }

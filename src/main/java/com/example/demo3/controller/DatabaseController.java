@@ -1,12 +1,12 @@
 package com.example.demo3.controller;
 
 import com.example.demo3.common.Constants;
+import com.example.demo3.model.dto.DriversDto;
+import com.example.demo3.model.dto.EnterprisesDto;
 import com.example.demo3.model.dto.VehicleDto;
 import com.example.demo3.model.dto.VehiclesDto;
-import com.example.demo3.model.entity.EnterpriseEntity;
-import com.example.demo3.model.entity.GeoPointEntity;
-import com.example.demo3.model.entity.TripEntity;
-import com.example.demo3.model.entity.VehicleEntity;
+import com.example.demo3.model.entity.*;
+import com.example.demo3.model.mock.MockObjectsCreator;
 import com.example.demo3.repository.*;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +25,20 @@ public class DatabaseController {
     private final EnterprisesRepository enterprisesRepository;
     private final VehiclesRepository vehiclesRepository;
     private final VehiclesRepositoryPaged vehiclesRepositoryPaged;
+    private final DriversRepository driversRepository;
+    private final ManagersRepository managersRepository;
+    private final MockObjectsCreator mockObjectsCreator;
 
     @Autowired
-    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged) {
+    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged, DriversRepository driversRepository, ManagersRepository managersRepository, MockObjectsCreator mockObjectsCreator) {
         this.geoPointRepository = geoPointRepository;
         this.tripRepository = tripRepository;
         this.enterprisesRepository = enterprisesRepository;
         this.vehiclesRepository = vehiclesRepository;
         this.vehiclesRepositoryPaged = vehiclesRepositoryPaged;
+        this.driversRepository = driversRepository;
+        this.managersRepository = managersRepository;
+        this.mockObjectsCreator = mockObjectsCreator;
     }
 
     public List<GeoPointEntity> getAllGeopoints() {
@@ -98,7 +104,7 @@ public class DatabaseController {
         return enterprisesRepository.findById(vehicleEntity.getEnterpriseId()).orElse(null);
     }
 
-    public VehiclesDto getAllVehiclesDto(){
+    public VehiclesDto getAllVehiclesDto() {
         VehiclesDto vehiclesDto = new VehiclesDto();
         List<VehicleDto> vehicleDtoList = new ArrayList<>();
         for (VehicleEntity vehicleEntity : vehiclesRepository.findAll()) {
@@ -154,5 +160,40 @@ public class DatabaseController {
         vehiclesRepository.deleteById(id);
     }
 
+    public EnterprisesDto getAllEnterprisesDto() {
+        EnterprisesDto enterprisesDto = new EnterprisesDto();
+        for (EnterpriseEntity enterpriseEntity : enterprisesRepository.findAll()) {
+            enterprisesDto.addEnterprise(enterpriseEntity);
+        }
+        return enterprisesDto;
+    }
 
+    public EnterprisesDto getAllEnterprisesDtoForManager(Long managerId) {
+        ManagerEntity manager = managersRepository.findById(managerId).orElse(null);
+        EnterprisesDto enterprisesDto = new EnterprisesDto();
+        if (manager == null) return enterprisesDto;
+        for (EnterpriseEntity enterpriseEntity : enterprisesRepository.findAllById(manager.getEnterprises())) {
+            enterprisesDto.getEnterprises().add(enterpriseEntity);
+        }
+        return enterprisesDto;
+    }
+
+    public EnterpriseEntity createMockEnterprise(Long managerId) {
+        EnterpriseEntity enterpriseEntity = mockObjectsCreator.createMockEnterprise();
+        EnterpriseEntity createdEnterprise = enterprisesRepository.save(enterpriseEntity);
+        ManagerEntity manager = managersRepository.findById(managerId).orElse(null);
+        if (manager != null) {
+            manager.getEnterprises().add(createdEnterprise.getId());
+            managersRepository.save(manager);
+        }
+        return enterpriseEntity;
+    }
+
+    public DriversDto getAllDriversDto() {
+        DriversDto driversDto = new DriversDto();
+        for (DriverEntity driverEntity : driversRepository.findAll()) {
+            driversDto.getDrivers().add(driverEntity);
+        }
+        return driversDto;
+    }
 }

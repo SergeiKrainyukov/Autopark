@@ -20,8 +20,6 @@ import java.util.TimeZone;
 @RequestMapping(path = "/")
 public class RestController {
     @Autowired
-    private CRUDServiceFactory crudServiceFactory;
-    @Autowired
     private GenerateRandomVehiclesUtility generateRandomVehiclesUtility;
     @Autowired
     private ManagersRepository managersRepository;
@@ -57,29 +55,21 @@ public class RestController {
             path = "/enterprises",
             produces = "application/json")
     public EnterprisesDto getEnterprises(@RequestParam("managerId") String managerId) {
-        return ((EnterprisesCRUDService) crudServiceFactory.getService(ServiceType.ENTERPRISES_SERVICE)).getAllWithDtoForManager(Long.parseLong(managerId));
+        return databaseController.getAllEnterprisesDtoForManager(Long.parseLong(managerId));
     }
 
     @PostMapping(
             path = "/createEnterprise/{managerId}",
             produces = "application/json")
     public EnterpriseEntity createMockEnterprise(@PathVariable Long managerId) {
-        EnterpriseEntity enterpriseEntity = mockObjectsCreator.createMockEnterprise();
-        EnterprisesCRUDService enterprisesCRUDService = ((EnterprisesCRUDService) crudServiceFactory.getService(ServiceType.ENTERPRISES_SERVICE));
-        EnterpriseEntity createdEnterprise = enterprisesCRUDService.save(enterpriseEntity);
-        ManagerEntity manager = managersRepository.findById(managerId).orElse(null);
-        if (manager != null) {
-            manager.getEnterprises().add(createdEnterprise.getId());
-            managersRepository.save(manager);
-        }
-        return createdEnterprise;
+        return databaseController.createMockEnterprise(managerId);
     }
 
     @GetMapping(
             path = "/drivers",
             produces = "application/json")
     public DriversDto getDrivers() {
-        return ((DriversCRUDService) crudServiceFactory.getService(ServiceType.DRIVERS_SERVICE)).getAllWithDto();
+        return databaseController.getAllDriversDto();
     }
 
     @PostMapping("/createVehicle")
@@ -124,8 +114,7 @@ public class RestController {
     ) {
         List<TripEntity> tripEntityList = databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo);
         List<GeoPointEntity> geoPointEntities = databaseController.getAllGeopoints();
-        JSONObject jsonObject = tripService.getTripAsJSON(tripEntityList, geoPointEntities);
-        return jsonObject.toMap();
+        return tripService.getTripAsJSON(tripEntityList, geoPointEntities).toMap();
     }
 
     @GetMapping("/trips")
