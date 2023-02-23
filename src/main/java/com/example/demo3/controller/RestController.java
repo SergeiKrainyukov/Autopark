@@ -3,12 +3,14 @@ package com.example.demo3.controller;
 import com.example.demo3.common.utilities.GenerateRandomVehiclesUtility;
 import com.example.demo3.common.utilities.TripOnMapGenerationUtility;
 import com.example.demo3.model.dto.*;
-import com.example.demo3.model.entity.*;
+import com.example.demo3.model.entity.EnterpriseEntity;
+import com.example.demo3.model.entity.GeoPointEntity;
+import com.example.demo3.model.entity.TripEntity;
+import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.model.mock.CreateRandVehiclesInfoDto;
 import com.example.demo3.model.mock.MockObjectsCreator;
-import com.example.demo3.repository.ManagersRepository;
-import com.example.demo3.service.*;
-import org.json.JSONObject;
+import com.example.demo3.service.ReportService;
+import com.example.demo3.service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,15 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import static com.example.demo3.common.GeoJSONHelper.getGeoJson;
+
 @org.springframework.web.bind.annotation.RestController
 @RequestMapping(path = "/")
 public class RestController {
     @Autowired
     private GenerateRandomVehiclesUtility generateRandomVehiclesUtility;
-    @Autowired
-    private ManagersRepository managersRepository;
-    @Autowired
-    private GeoPointsService geoPointsService;
     @Autowired
     private TripService tripService;
     @Autowired
@@ -96,14 +96,14 @@ public class RestController {
     public GeoPointsDto getGeopointsForVehicle(@RequestParam(value = "vehicleId", defaultValue = "0") int vehicleId,
                                                @RequestParam(value = "dateFrom", defaultValue = "") String dateFrom,
                                                @RequestParam(value = "dateTo", defaultValue = "") String dateTo) {
-        return geoPointsService.getGeoPointsDto((long) vehicleId, dateFrom, dateTo);
+        return databaseController.getGeoPointsDto(vehicleId, dateFrom, dateTo);
     }
 
     @GetMapping("/geopoints/geoJson")
     public Map<String, Object> getGeopointsForVehicleAsGeoJSON(@RequestParam(value = "vehicleId", defaultValue = "0") int vehicleId,
                                                                @RequestParam(value = "dateFrom", defaultValue = "") String dateFrom,
                                                                @RequestParam(value = "dateTo", defaultValue = "") String dateTo) {
-        return geoPointsService.getGeoJson(vehicleId, dateFrom, dateTo).toMap();
+        return getGeoJson(databaseController.getAllGeopointsByVehicleIdAndDates(vehicleId, dateFrom, dateTo)).toMap();
     }
 
     @GetMapping("/trip")

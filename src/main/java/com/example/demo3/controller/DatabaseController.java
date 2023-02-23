@@ -1,10 +1,7 @@
 package com.example.demo3.controller;
 
 import com.example.demo3.common.Constants;
-import com.example.demo3.model.dto.DriversDto;
-import com.example.demo3.model.dto.EnterprisesDto;
-import com.example.demo3.model.dto.VehicleDto;
-import com.example.demo3.model.dto.VehiclesDto;
+import com.example.demo3.model.dto.*;
 import com.example.demo3.model.entity.*;
 import com.example.demo3.model.mock.MockObjectsCreator;
 import com.example.demo3.repository.*;
@@ -15,7 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.example.demo3.common.DateFormatHelper.getZonedTimeStringFormatted;
 
 @SpringComponent
 public class DatabaseController {
@@ -50,10 +50,6 @@ public class DatabaseController {
         return result;
     }
 
-    public List<GeoPointEntity> getAllGeopointsByVehicleId(long vehicleId) {
-        return geoPointRepository.findAllByVehicleId(vehicleId);
-    }
-
     public List<GeoPointEntity> getAllGeopointsByVehicleIdAndDates(long vehicleId, String startDate, String endDate) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.DATE_FORMAT_PATTERN_EXTENDED);
         long dateFromInMillis;
@@ -70,15 +66,6 @@ public class DatabaseController {
 
     public List<GeoPointEntity> getAllGeopointsByVehicleIdAndDates(long vehicleId, long startDate, long endDate) {
         return geoPointRepository.findAllByVehicleIdBetweenDates(startDate, endDate, vehicleId);
-    }
-
-    public List<TripEntity> getAllTrips() {
-        Iterable<TripEntity> tripEntities = tripRepository.findAll();
-        List<TripEntity> result = new ArrayList<>();
-        for (TripEntity tripEntity : tripEntities) {
-            result.add(tripEntity);
-        }
-        return result;
     }
 
     public List<TripEntity> getAllTripsByVehicleIdAndDates(long vehicleId, long startDate, long endDate) {
@@ -152,20 +139,8 @@ public class DatabaseController {
         else return null;
     }
 
-    public VehicleEntity findVehicleById(Long id) {
-        return vehiclesRepository.findById(id).orElse(null);
-    }
-
     public void deleteVehicleById(Long id) {
         vehiclesRepository.deleteById(id);
-    }
-
-    public EnterprisesDto getAllEnterprisesDto() {
-        EnterprisesDto enterprisesDto = new EnterprisesDto();
-        for (EnterpriseEntity enterpriseEntity : enterprisesRepository.findAll()) {
-            enterprisesDto.addEnterprise(enterpriseEntity);
-        }
-        return enterprisesDto;
     }
 
     public EnterprisesDto getAllEnterprisesDtoForManager(Long managerId) {
@@ -196,4 +171,19 @@ public class DatabaseController {
         }
         return driversDto;
     }
+
+    public GeoPointsDto getGeoPointsDto(long vehicleId, String startDate, String endDate) {
+        GeoPointsDto geoPointsDto = new GeoPointsDto();
+        List<GeoPointEntity> geoPointEntities = getAllGeopointsByVehicleIdAndDates(vehicleId, startDate, endDate);
+        if (geoPointEntities == null || geoPointEntities.size() == 0) return geoPointsDto;
+        VehicleEntity vehicleEntity = vehiclesRepository.findById(vehicleId).orElse(null);
+        if (vehicleEntity == null) return geoPointsDto;
+        EnterpriseEntity enterpriseEntity = enterprisesRepository.findById(vehicleEntity.getEnterpriseId()).orElse(null);
+        if (enterpriseEntity == null) return geoPointsDto;
+        List<GeoPointDto> geoPointDtoList = new ArrayList<>();
+        geoPointEntities.forEach(geoPointEntity -> geoPointDtoList.add(GeoPointDto.fromGeoPointEntity(geoPointEntity, getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), geoPointEntity.getDate()))));
+        geoPointsDto.setGeoPoints(geoPointDtoList);
+        return geoPointsDto;
+    }
+
 }

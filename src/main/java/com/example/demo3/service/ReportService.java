@@ -7,9 +7,9 @@ import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
+
+import static com.example.demo3.common.DateFormatHelper.getLongDate;
 
 @SpringComponent
 public class ReportService {
@@ -28,16 +28,6 @@ public class ReportService {
                 return ReportPeriod.MONTH;
             default:
                 return ReportPeriod.DAY;
-        }
-    }
-
-    private Long getLongDate(String date) {
-        try {
-            Date parsedDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(date);
-            return parsedDate.getTime();
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return 0L;
         }
     }
 }
