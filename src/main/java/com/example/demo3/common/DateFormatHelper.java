@@ -18,6 +18,14 @@ public class DateFormatHelper {
         return dateFormat.format(calendar.getTime());
     }
 
+    public static String getZonedTimeStringFormatted(TimeZone timezone, Long dateMillis) {
+        Calendar calendar = Calendar.getInstance(timezone);
+        calendar.setTime(new Date(dateMillis));
+        DateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
+        dateFormat.setTimeZone(timezone);
+        return dateFormat.format(calendar.getTime());
+    }
+
     public static Long getLongDate(String date) {
         try {
             Date parsedDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(date);

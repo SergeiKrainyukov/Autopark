@@ -12,17 +12,19 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
+
+import static com.example.demo3.common.DateFormatHelper.getZonedTimeStringFormatted;
+import static com.example.demo3.common.GeoJSONHelper.getGeoJson;
 
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -97,46 +99,6 @@ public class TripService {
             System.out.println(e.getMessage());
             return null;
         }
-    }
-
-    private JSONObject getGeoJson(List<GeoPointEntity> geoPointEntities) {
-        JSONObject featureCollection = new JSONObject();
-        featureCollection.put("type", "FeatureCollection");
-        JSONObject properties = new JSONObject();
-        properties.put("name", "ESPG:4326");
-        JSONObject crs = new JSONObject();
-        crs.put("type", "name");
-        crs.put("properties", properties);
-        featureCollection.put("crs", crs);
-
-        JSONArray features = new JSONArray();
-
-        for (GeoPointEntity geoPointEntity : geoPointEntities) {
-            JSONObject feature = new JSONObject();
-            feature.put("type", "Feature");
-            JSONObject geometry = new JSONObject();
-            JSONObject desc = new JSONObject();
-
-            JSONArray JSONArrayCoord = new JSONArray("[" + geoPointEntity.getGeoPoint().getX() + "," + geoPointEntity.getGeoPoint().getY() + "]");
-
-            geometry.put("type", "Point");
-            geometry.put("coordinates", JSONArrayCoord);
-            feature.put("geometry", geometry);
-            feature.put("properties", desc);
-            desc.put("name", "Oregon");
-
-            features.put(feature);
-            featureCollection.put("features", features);
-        }
-        return featureCollection;
-    }
-
-    private String getZonedTimeStringFormatted(TimeZone timezone, Long dateMillis) {
-        Calendar calendar = Calendar.getInstance(timezone);
-        calendar.setTime(new Date(dateMillis));
-        DateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
-        dateFormat.setTimeZone(timezone);
-        return dateFormat.format(calendar.getTime());
     }
 
     public String requestPlace(String url) {
