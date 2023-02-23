@@ -57,18 +57,17 @@ public class TripService {
                     maxEndDate = tripEntity.getEndDate();
                 }
             }
-            return getGeoJson(filterGeopointsByDates(geoPointEntities, minStartDate, maxEndDate));
+            long finalMinStartDate = minStartDate;
+            long finalMaxEndDate = maxEndDate;
+            List<GeoPointEntity> filteredGeoPoints = geoPointEntities.stream()
+                    .filter(geoPointEntity -> geoPointEntity.getDate() >= finalMinStartDate && geoPointEntity.getDate() <= finalMaxEndDate)
+                    .collect(Collectors.toList());
+            return getGeoJson(filteredGeoPoints);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return null;
+            return new JSONObject();
         }
-    }
-
-    private List<GeoPointEntity> filterGeopointsByDates(List<GeoPointEntity> geoPointEntities, long startDate, long endDate) {
-        return geoPointEntities.stream()
-                .filter(geoPointEntity -> geoPointEntity.getDate() >= startDate && geoPointEntity.getDate() <= endDate)
-                .collect(Collectors.toList());
     }
 
     public TripsDto getAllTripsByVehicleIdAndDates(TimeZone enterpriseTimeZone, List<TripEntity> tripEntitiesByVehicleIdBetweenDates, List<GeoPointEntity> allGeoPointsByVehicleIdAndDates) {
