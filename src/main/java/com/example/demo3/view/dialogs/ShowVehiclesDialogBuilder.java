@@ -1,6 +1,7 @@
 package com.example.demo3.view.dialogs;
 
 import com.example.demo3.controller.DatabaseController;
+import com.example.demo3.model.entity.BrandEntity;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.repository.BrandsRepository;
 import com.example.demo3.repository.GeoPointRepository;
@@ -124,7 +125,11 @@ public class ShowVehiclesDialogBuilder {
                     });
                     Button updateVehicleButton = new Button(new Icon(VaadinIcon.PENCIL));
                     updateVehicleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> {
-                        new CRUDVehicleDialogBuilder(vehiclesRepository, brandsRepository).createDialogForUpdateVehicle(vehicle);
+                        List<BrandEntity> brandEntities = new ArrayList<>();
+                        brandsRepository.findAll().forEach(brandEntities::add);
+                        new CRUDVehicleDialogBuilder(brandEntities).createDialogForUpdateVehicle(vehicle, vehicleEntity -> {
+                            //TODO save vehicle
+                        });
                         dialog.close();
                     });
                     Button deleteVehicleButton = new Button(new Icon(VaadinIcon.TRASH));

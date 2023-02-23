@@ -1,10 +1,11 @@
 package com.example.demo3.view;
 
-import com.example.demo3.repository.BrandsRepository;
-import com.example.demo3.repository.VehiclesRepository;
+import com.example.demo3.controller.DatabaseController;
+import com.example.demo3.model.entity.DriverEntity;
+import com.example.demo3.model.entity.EnterpriseEntity;
+import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.security.SecurityService;
 import com.example.demo3.view.dialogs.*;
-import com.example.demo3.view.helpers.EnterprisesUIProvider;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -22,6 +23,9 @@ import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.demo3.common.Strings.*;
 
@@ -33,10 +37,7 @@ public class MainView extends VerticalLayout {
     private final static String HEADER_WIDTH = "100%";
 
     private final SecurityService securityService;
-
-    private final VehiclesRepository vehiclesRepository;
-    private final BrandsRepository brandsRepository;
-    private final EnterprisesUIProvider enterprisesUIProvider;
+    private final DatabaseController databaseController;
 
     private final Grid<EnterpriseUi> enterprisesGrid = new Grid<>(EnterpriseUi.class, false);
 
@@ -46,19 +47,15 @@ public class MainView extends VerticalLayout {
 
     @Autowired
     public MainView(
-            VehiclesRepository vehiclesRepository,
             ShowVehiclesDialogBuilder showVehiclesDialogBuilder,
             ShowAllDriversDialogBuilder showAllDriversDialogBuilder,
             SecurityService securityService,
-            BrandsRepository brandsRepository,
-            EnterprisesUIProvider enterprisesUIProvider,
+            DatabaseController databaseController,
             ReportsDialogBuilder reportsDialogBuilder) {
-        this.vehiclesRepository = vehiclesRepository;
+        this.databaseController = databaseController;
         this.showVehiclesDialogBuilder = showVehiclesDialogBuilder;
         this.showAllDriversDialogBuilder = showAllDriversDialogBuilder;
         this.securityService = securityService;
-        this.brandsRepository = brandsRepository;
-        this.enterprisesUIProvider = enterprisesUIProvider;
         this.reportsDialogBuilder = reportsDialogBuilder;
 
         setSpacing(true);
@@ -78,14 +75,12 @@ public class MainView extends VerticalLayout {
         header.setWidth(HEADER_WIDTH);
 
         VerticalLayout verticalLayout = new VerticalLayout();
-        verticalLayout.add(header);
-        verticalLayout.add(userNameHeader);
-
+        verticalLayout.add(header, userNameHeader);
         return verticalLayout;
     }
 
     private void fillEnterprisesGrid() {
-        enterprisesGrid.setItems(enterprisesUIProvider.getEnterprisesUIForCurrentManager());
+        enterprisesGrid.setItems(getEnterprisesUi());
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getName).setHeader(new H4(NAME));
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getCity).setHeader(new H4(CITY));
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getVehicles).setHeader(createVehiclesHeader());
@@ -97,10 +92,10 @@ public class MainView extends VerticalLayout {
         horizontalLayout.add(new H4(VEHICLES_TITLE));
 
         Button addVehicleButton = new Button(new Icon(VaadinIcon.PLUS));
-        addVehicleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> new CRUDVehicleDialogBuilder(vehiclesRepository, brandsRepository).createDialogForNewVehicle(enterprisesUIProvider.getEnterprisesUIForCurrentManager()));
+        addVehicleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> new CRUDVehicleDialogBuilder(databaseController.getAllBrands()).createDialogForNewVehicle(getEnterprisesUi(), databaseController::saveVehicle));
 
         Button showAllVehiclesButton = new Button(SHOW_ALL_BUTTON);
-        showAllVehiclesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(enterprisesUIProvider.getEnterprisesUIForCurrentManager(), showVehiclesDialogBuilder::createDialogForShowingVehicles));
+        showAllVehiclesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), showVehiclesDialogBuilder::createDialogForShowingVehicles));
 
         horizontalLayout.add(addVehicleButton, showAllVehiclesButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);
@@ -112,7 +107,7 @@ public class MainView extends VerticalLayout {
         horizontalLayout.add(new H4(DRIVERS_TITLE));
 
         Button showAllDriversButton = new Button(SHOW_ALL_BUTTON);
-        showAllDriversButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(enterprisesUIProvider.getEnterprisesUIForCurrentManager(), enterpriseUi -> showAllDriversDialogBuilder.createDialogForShowingDrivers(enterpriseUi.getId())));
+        showAllDriversButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), enterpriseUi -> showAllDriversDialogBuilder.createDialogForShowingDrivers(enterpriseUi.getId())));
 
         horizontalLayout.add(showAllDriversButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);
@@ -123,5 +118,25 @@ public class MainView extends VerticalLayout {
         Button reportsButton = new Button(REPORTS_BUTTON);
         reportsButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> reportsDialogBuilder.createDialogForShowingReports());
         return reportsButton;
+    }
+
+    private List<EnterpriseUi> getEnterprisesUi() {
+        List<EnterpriseEntity> enterpriseEntities = databaseController.getEnterprisesForCurrentManager();
+        List<VehicleEntity> vehicleEntities = databaseController.getAllVehicles();
+        List<DriverEntity> driverEntities = databaseController.getAllDrivers();
+        List<EnterpriseUi> enterpriseUis = new ArrayList<>();
+        enterpriseEntities.forEach(enterpriseEntity -> {
+            String name = enterpriseEntity.getName();
+            String city = enterpriseEntity.getCity();
+            String vehicleNumbers = vehicleEntities.stream()
+                    .filter(vehicleEntity -> vehicleEntity.getEnterpriseId().equals(enterpriseEntity.getId()))
+                    .map(vehicleEntity -> vehicleEntity.getStateNumber().toString())
+                    .collect(Collectors.joining(", "));
+            String driverNames = driverEntities.stream()
+                    .filter(driverEntity -> driverEntity.getEnterpriseId().equals(enterpriseEntity.getId()))
+                    .map(DriverEntity::getName).collect(Collectors.joining(", "));
+            enterpriseUis.add(new EnterpriseUi(enterpriseEntity.getId(), name, city, vehicleNumbers, driverNames));
+        });
+        return enterpriseUis;
     }
 }

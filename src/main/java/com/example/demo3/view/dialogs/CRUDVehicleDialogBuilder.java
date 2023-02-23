@@ -2,8 +2,6 @@ package com.example.demo3.view.dialogs;
 
 import com.example.demo3.model.entity.BrandEntity;
 import com.example.demo3.model.entity.VehicleEntity;
-import com.example.demo3.repository.BrandsRepository;
-import com.example.demo3.repository.VehiclesRepository;
 import com.example.demo3.view.EnterpriseUi;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -19,23 +17,17 @@ import static com.example.demo3.common.Strings.*;
 
 public class CRUDVehicleDialogBuilder {
 
-    private final VehiclesRepository vehiclesRepository;
-    private final BrandsRepository brandsRepository;
-
-    private final List<BrandEntity> brandEntities = new ArrayList<>();
+    private final List<BrandEntity> brandEntities;
 
     private VehicleEntity vehicleEntity;
 
     private static final String UTC_TIMEZONE = "UTC";
 
-    public CRUDVehicleDialogBuilder(VehiclesRepository vehiclesRepository, BrandsRepository brandsRepository) {
-        this.vehiclesRepository = vehiclesRepository;
-        this.brandsRepository = brandsRepository;
-
-        fetchDataFromRepo();
+    public CRUDVehicleDialogBuilder(List<BrandEntity> brandEntities) {
+        this.brandEntities = brandEntities;
     }
 
-    public void createDialogForNewVehicle(List<EnterpriseUi> enterpriseUiList) {
+    public void createDialogForNewVehicle(List<EnterpriseUi> enterpriseUiList, SaveVehicle saveVehicle) {
         vehicleEntity = new VehicleEntity();
         vehicleEntity.setPurchaseDate(Calendar.getInstance(TimeZone.getTimeZone(UTC_TIMEZONE)).getTimeInMillis());
 
@@ -45,15 +37,14 @@ public class CRUDVehicleDialogBuilder {
         VerticalLayout dialogLayout = createDialogLayout(enterpriseUiList);
         dialog.add(dialogLayout);
 
-        Button saveButton = createSaveButton(dialog);
+        Button saveButton = createSaveButton(dialog, saveVehicle);
         Button cancelButton = new Button(CANCEL_BUTTON, e -> dialog.close());
 
-        dialog.getFooter().add(cancelButton);
-        dialog.getFooter().add(saveButton);
+        dialog.getFooter().add(cancelButton, saveButton);
         dialog.open();
     }
 
-    public void createDialogForUpdateVehicle(VehicleEntity vehicleEntity) {
+    public void createDialogForUpdateVehicle(VehicleEntity vehicleEntity, SaveVehicle saveVehicle) {
         this.vehicleEntity = vehicleEntity;
 
         Dialog dialog = new Dialog();
@@ -62,7 +53,7 @@ public class CRUDVehicleDialogBuilder {
         VerticalLayout dialogLayout = createDialogLayout(null);
         dialog.add(dialogLayout);
 
-        Button saveButton = createSaveButton(dialog);
+        Button saveButton = createSaveButton(dialog, saveVehicle);
         Button cancelButton = createCancelButton(dialog);
 
         dialog.getFooter().add(cancelButton);
@@ -122,9 +113,9 @@ public class CRUDVehicleDialogBuilder {
         return dialogLayout;
     }
 
-    private Button createSaveButton(Dialog dialog) {
+    private Button createSaveButton(Dialog dialog, SaveVehicle saveVehicle) {
         Button saveButton = new Button(SAVE_BUTTON, e -> {
-            vehiclesRepository.save(vehicleEntity);
+            saveVehicle.save(vehicleEntity);
             dialog.close();
         });
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -133,12 +124,6 @@ public class CRUDVehicleDialogBuilder {
 
     private Button createCancelButton(Dialog dialog) {
         return new Button(CANCEL_BUTTON, e -> dialog.close());
-    }
-
-    private void fetchDataFromRepo() {
-        for (BrandEntity brandEntity : brandsRepository.findAll()) {
-            brandEntities.add(brandEntity);
-        }
     }
 
     private BrandEntity findBrandById(Long brandId) {

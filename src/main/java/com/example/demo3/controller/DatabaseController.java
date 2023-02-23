@@ -5,6 +5,7 @@ import com.example.demo3.model.dto.*;
 import com.example.demo3.model.entity.*;
 import com.example.demo3.model.mock.MockObjectsCreator;
 import com.example.demo3.repository.*;
+import com.example.demo3.security.SecurityService;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,9 +29,11 @@ public class DatabaseController {
     private final DriversRepository driversRepository;
     private final ManagersRepository managersRepository;
     private final MockObjectsCreator mockObjectsCreator;
+    private final BrandsRepository brandsRepository;
+    private final SecurityService securityService;
 
     @Autowired
-    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged, DriversRepository driversRepository, ManagersRepository managersRepository, MockObjectsCreator mockObjectsCreator) {
+    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged, DriversRepository driversRepository, ManagersRepository managersRepository, MockObjectsCreator mockObjectsCreator, BrandsRepository brandsRepository, SecurityService securityService) {
         this.geoPointRepository = geoPointRepository;
         this.tripRepository = tripRepository;
         this.enterprisesRepository = enterprisesRepository;
@@ -39,6 +42,8 @@ public class DatabaseController {
         this.driversRepository = driversRepository;
         this.managersRepository = managersRepository;
         this.mockObjectsCreator = mockObjectsCreator;
+        this.brandsRepository = brandsRepository;
+        this.securityService = securityService;
     }
 
     public List<GeoPointEntity> getAllGeopoints() {
@@ -184,6 +189,51 @@ public class DatabaseController {
         geoPointEntities.forEach(geoPointEntity -> geoPointDtoList.add(GeoPointDto.fromGeoPointEntity(geoPointEntity, getZonedTimeStringFormatted(enterpriseEntity.getTimeZone(), geoPointEntity.getDate()))));
         geoPointsDto.setGeoPoints(geoPointDtoList);
         return geoPointsDto;
+    }
+
+    public List<BrandEntity> getAllBrands() {
+        List<BrandEntity> brandEntities = new ArrayList<>();
+        brandsRepository.findAll().forEach(brandEntities::add);
+        return brandEntities;
+    }
+
+    public List<VehicleEntity> getAllVehicles() {
+        List<VehicleEntity> vehicleEntities = new ArrayList<>();
+        vehiclesRepository.findAll().forEach(vehicleEntities::add);
+        return vehicleEntities;
+    }
+
+    public List<DriverEntity> getAllDrivers() {
+        List<DriverEntity> driverEntities = new ArrayList<>();
+        driversRepository.findAll().forEach(driverEntities::add);
+        return driverEntities;
+    }
+
+    public List<EnterpriseEntity> getEnterprisesForCurrentManager() {
+        List<EnterpriseEntity> enterprises = new ArrayList<>();
+        for (EnterpriseEntity enterpriseEntity : enterprisesRepository.findAll()) {
+            enterprises.add(enterpriseEntity);
+        }
+        ManagerEntity currentManager = getCurrentManager();
+        if (currentManager != null)
+            enterprises.removeIf(enterpriseEntity -> !currentManager.getEnterprises().contains(enterpriseEntity.getId()));
+        return enterprises;
+    }
+
+    private ManagerEntity getCurrentManager() {
+        String authenticatedManagerName = securityService.getAuthenticatedUser().getUsername();
+        List<ManagerEntity> managers = getManagers();
+        if (managers.isEmpty()) return null;
+        managers.removeIf(manager -> !manager.getUsername().equals(authenticatedManagerName));
+        return managers.get(0);
+    }
+
+    private List<ManagerEntity> getManagers() {
+        List<ManagerEntity> managers = new ArrayList<>();
+        for (ManagerEntity manager : managersRepository.findAll()) {
+            managers.add(manager);
+        }
+        return managers;
     }
 
 }
