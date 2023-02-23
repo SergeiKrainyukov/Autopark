@@ -31,8 +31,6 @@ import static com.example.demo3.common.GeoJSONHelper.getGeoJson;
 @SpringComponent
 public class TripService {
 
-    private static final String dateFormatPattern = "dd.MM.yyyy HH:mm:ss";
-
     @Value("${map_box_api_key}")
     private String API_KEY;
     @Value("${map_box_url}")
