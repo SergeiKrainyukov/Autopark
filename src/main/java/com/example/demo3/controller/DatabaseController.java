@@ -221,6 +221,10 @@ public class DatabaseController {
         return vehicleEntities;
     }
 
+    public List<VehicleEntity> getAllVehiclesByEnterpriseId(long enterpriseId) {
+        return new ArrayList<>(vehiclesRepository.findAllByEnterpriseId(enterpriseId));
+    }
+
     public List<DriverEntity> getAllDrivers() {
         List<DriverEntity> driverEntities = new ArrayList<>();
         driversRepository.findAll().forEach(driverEntities::add);

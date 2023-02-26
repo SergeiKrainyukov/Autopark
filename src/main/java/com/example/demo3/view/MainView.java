@@ -6,6 +6,7 @@ import com.example.demo3.model.entity.EnterpriseEntity;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.security.SecurityService;
 import com.example.demo3.view.dialogs.*;
+import com.example.demo3.view.dialogs.helpers.VehiclesDialogOperations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -82,17 +83,8 @@ public class MainView extends VerticalLayout {
 
         Button showAllVehiclesButton = new Button(SHOW_ALL_BUTTON);
         showAllVehiclesButton.addClickListener(event -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), enterpriseUi -> new ShowVehiclesDialogBuilder(
-                databaseController.getAllBrands())
-                .createDialogForShowingVehicles(enterpriseUi,
-                        databaseController.getAllVehicles()
-                                .stream()
-                                .filter(vehicleEntity -> vehicleEntity.getEnterpriseId().equals(enterpriseUi.getId()))
-                                .collect(Collectors.toList()),
-                        databaseController::saveVehicle,
-                        databaseController::deleteVehicle,
-                        databaseController::getAllTripsDtoByVehicleIdAndDates,
-                        databaseController::getAllGeopointsByVehicleIdAndDates)));
-
+                databaseController.getAllBrands(), databaseController.getAllVehiclesByEnterpriseId(enterpriseUi.getId()), createHelperForShowVehiclesDialog())
+                .createDialogForShowingVehicles(enterpriseUi)));
         horizontalLayout.add(addVehicleButton, showAllVehiclesButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);
         return horizontalLayout;
@@ -134,5 +126,14 @@ public class MainView extends VerticalLayout {
             enterpriseUis.add(new EnterpriseUi(enterpriseEntity.getId(), name, city, vehicleNumbers, driverNames));
         });
         return enterpriseUis;
+    }
+
+    private VehiclesDialogOperations createHelperForShowVehiclesDialog() {
+        return new VehiclesDialogOperations(
+                databaseController::saveVehicle,
+                databaseController::deleteVehicle,
+                databaseController::getAllTripsDtoByVehicleIdAndDates,
+                databaseController::getAllGeopointsByVehicleIdAndDates
+        );
     }
 }
