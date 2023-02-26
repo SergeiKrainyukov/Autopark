@@ -6,6 +6,7 @@ import com.example.demo3.model.entity.*;
 import com.example.demo3.model.mock.MockObjectsCreator;
 import com.example.demo3.repository.*;
 import com.example.demo3.security.SecurityService;
+import com.example.demo3.service.TripService;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import static com.example.demo3.common.DateFormatHelper.getZonedTimeStringFormatted;
 
@@ -31,9 +33,10 @@ public class DatabaseController {
     private final MockObjectsCreator mockObjectsCreator;
     private final BrandsRepository brandsRepository;
     private final SecurityService securityService;
+    private final TripService tripService;
 
     @Autowired
-    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged, DriversRepository driversRepository, ManagersRepository managersRepository, MockObjectsCreator mockObjectsCreator, BrandsRepository brandsRepository, SecurityService securityService) {
+    public DatabaseController(GeoPointRepository geoPointRepository, TripRepository tripRepository, EnterprisesRepository enterprisesRepository, VehiclesRepository vehiclesRepository, VehiclesRepositoryPaged vehiclesRepositoryPaged, DriversRepository driversRepository, ManagersRepository managersRepository, MockObjectsCreator mockObjectsCreator, BrandsRepository brandsRepository, SecurityService securityService, TripService tripService) {
         this.geoPointRepository = geoPointRepository;
         this.tripRepository = tripRepository;
         this.enterprisesRepository = enterprisesRepository;
@@ -44,6 +47,7 @@ public class DatabaseController {
         this.mockObjectsCreator = mockObjectsCreator;
         this.brandsRepository = brandsRepository;
         this.securityService = securityService;
+        this.tripService = tripService;
     }
 
     public List<GeoPointEntity> getAllGeopoints() {
@@ -88,6 +92,16 @@ public class DatabaseController {
             return new ArrayList<>();
         }
         return tripRepository.getAllByVehicleIdAndDates(vehicleId, dateFromInMillis, dateToInMillis);
+    }
+
+    public List<TripDto> getAllTripsDtoByVehicleIdAndDates(Long vehicleId, long startDate, long endDate) {
+        List<TripEntity> tripEntities = getAllTripsByVehicleIdAndDates(vehicleId, startDate, endDate);
+        List<GeoPointEntity> geoPointEntities = getAllGeopointsByVehicleIdAndDates(vehicleId, startDate, endDate);
+        if (tripEntities.size() != 0 && geoPointEntities.size() != 0) {
+            return tripService.getAllTripsByVehicleIdAndDates(TimeZone.getDefault(), tripEntities, geoPointEntities).getTrips();
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public EnterpriseEntity getEnterpriseByVehicleId(long vehicleId) {
@@ -146,6 +160,10 @@ public class DatabaseController {
 
     public void deleteVehicleById(Long id) {
         vehiclesRepository.deleteById(id);
+    }
+
+    public void deleteVehicle(VehicleEntity vehicleEntity) {
+        vehiclesRepository.deleteById(vehicleEntity.getId());
     }
 
     public EnterprisesDto getAllEnterprisesDtoForManager(Long managerId) {

@@ -1,6 +1,7 @@
 package com.example.demo3.view.dialogs;
 
 import com.example.demo3.view.EnterpriseUi;
+import com.example.demo3.view.dialogs.helpers.EnterpriseUIAction;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;

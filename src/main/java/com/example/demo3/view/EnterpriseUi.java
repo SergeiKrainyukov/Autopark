@@ -4,15 +4,15 @@ public class EnterpriseUi {
     private Long id;
     private String name;
     private String city;
-    private String vehicles;
-    private String drivers;
+    private String vehicleNumbers;
+    private String driverNames;
 
-    public EnterpriseUi(Long id, String name, String city, String vehicles, String drivers) {
+    public EnterpriseUi(Long id, String name, String city, String vehicleNumbers, String driverNames) {
         this.id = id;
         this.name = name;
         this.city = city;
-        this.vehicles = vehicles;
-        this.drivers = drivers;
+        this.vehicleNumbers = vehicleNumbers;
+        this.driverNames = driverNames;
     }
 
     public String getName() {
@@ -31,20 +31,20 @@ public class EnterpriseUi {
         this.city = city;
     }
 
-    public String getVehicles() {
-        return vehicles;
+    public String getVehicleNumbers() {
+        return vehicleNumbers;
     }
 
-    public void setVehicles(String vehicles) {
-        this.vehicles = vehicles;
+    public void setVehicleNumbers(String vehicleNumbers) {
+        this.vehicleNumbers = vehicleNumbers;
     }
 
-    public String getDrivers() {
-        return drivers;
+    public String getDriverNames() {
+        return driverNames;
     }
 
-    public void setDrivers(String drivers) {
-        this.drivers = drivers;
+    public void setDriverNames(String driverNames) {
+        this.driverNames = driverNames;
     }
 
     public Long getId() {

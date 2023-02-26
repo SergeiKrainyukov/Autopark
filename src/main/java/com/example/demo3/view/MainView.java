@@ -41,19 +41,16 @@ public class MainView extends VerticalLayout {
 
     private final Grid<EnterpriseUi> enterprisesGrid = new Grid<>(EnterpriseUi.class, false);
 
-    private final ShowVehiclesDialogBuilder showVehiclesDialogBuilder;
     private final ShowAllDriversDialogBuilder showAllDriversDialogBuilder;
     private final ReportsDialogBuilder reportsDialogBuilder;
 
     @Autowired
     public MainView(
-            ShowVehiclesDialogBuilder showVehiclesDialogBuilder,
             ShowAllDriversDialogBuilder showAllDriversDialogBuilder,
             SecurityService securityService,
             DatabaseController databaseController,
             ReportsDialogBuilder reportsDialogBuilder) {
         this.databaseController = databaseController;
-        this.showVehiclesDialogBuilder = showVehiclesDialogBuilder;
         this.showAllDriversDialogBuilder = showAllDriversDialogBuilder;
         this.securityService = securityService;
         this.reportsDialogBuilder = reportsDialogBuilder;
@@ -83,8 +80,8 @@ public class MainView extends VerticalLayout {
         enterprisesGrid.setItems(getEnterprisesUi());
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getName).setHeader(new H4(NAME));
         enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getCity).setHeader(new H4(CITY));
-        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getVehicles).setHeader(createVehiclesHeader());
-        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getDrivers).setHeader(createDriversHeader());
+        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getVehicleNumbers).setHeader(createVehiclesHeader());
+        enterprisesGrid.addColumn((ValueProvider<EnterpriseUi, String>) EnterpriseUi::getDriverNames).setHeader(createDriversHeader());
     }
 
     private Component createVehiclesHeader() {
@@ -95,7 +92,19 @@ public class MainView extends VerticalLayout {
         addVehicleButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) event -> new CRUDVehicleDialogBuilder(databaseController.getAllBrands()).createDialogForNewVehicle(getEnterprisesUi(), databaseController::saveVehicle));
 
         Button showAllVehiclesButton = new Button(SHOW_ALL_BUTTON);
-        showAllVehiclesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), showVehiclesDialogBuilder::createDialogForShowingVehicles));
+        showAllVehiclesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), enterpriseUi -> {
+            new ShowVehiclesDialogBuilder(
+                    databaseController.getAllBrands())
+                    .createDialogForShowingVehicles(enterpriseUi,
+                            databaseController.getAllVehicles()
+                                    .stream()
+                                    .filter(vehicleEntity -> vehicleEntity.getEnterpriseId().equals(enterpriseUi.getId()))
+                                    .collect(Collectors.toList()),
+                            databaseController::saveVehicle,
+                            databaseController::deleteVehicle,
+                            databaseController::getAllTripsDtoByVehicleIdAndDates,
+                            databaseController::getAllGeopointsByVehicleIdAndDates);
+        }));
 
         horizontalLayout.add(addVehicleButton, showAllVehiclesButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);

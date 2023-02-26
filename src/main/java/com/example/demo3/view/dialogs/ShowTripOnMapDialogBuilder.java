@@ -1,8 +1,6 @@
 package com.example.demo3.view.dialogs;
 
-import com.example.demo3.model.dto.TripDto;
 import com.example.demo3.model.entity.GeoPointEntity;
-import com.example.demo3.repository.GeoPointRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
@@ -13,8 +11,6 @@ import com.vaadin.flow.server.StreamResource;
 
 import java.io.*;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import static com.example.demo3.common.Strings.OK_BUTTON;
@@ -25,12 +21,10 @@ public class ShowTripOnMapDialogBuilder {
     private static final String destinationFile = "image.png";
     private static final String ALT_TEXT = "alt text";
 
-    private static final String dateFormatPattern = "dd.MM.yyyy HH:mm:ss";
-
-    public void createDialog(TripDto tripDto, GeoPointRepository geoPointRepository) {
+    public void createDialog(List<GeoPointEntity> geoPointEntitiesByVehicleIdAndDates) {
         Dialog dialog = new Dialog();
 
-        VerticalLayout dialogLayout = createDialogLayout(tripDto, geoPointRepository);
+        VerticalLayout dialogLayout = createDialogLayout(geoPointEntitiesByVehicleIdAndDates);
         dialog.add(dialogLayout);
 
         Button okButton = new Button(OK_BUTTON, event -> {
@@ -43,9 +37,9 @@ public class ShowTripOnMapDialogBuilder {
         dialog.open();
     }
 
-    private VerticalLayout createDialogLayout(TripDto tripDto, GeoPointRepository geoPointRepository) {
+    private VerticalLayout createDialogLayout(List<GeoPointEntity> geoPointEntitiesByVehicleIdAndDates) {
         try {
-            saveImage(tripDto, geoPointRepository);
+            saveImage(geoPointEntitiesByVehicleIdAndDates);
             File file = new File(destinationFile);
             if (!file.exists()) return null;
             Image image = new Image(new StreamResource(file.getPath(), (InputStreamFactory) () -> {
@@ -67,17 +61,13 @@ public class ShowTripOnMapDialogBuilder {
         }
     }
 
-    private void saveImage(TripDto tripDto, GeoPointRepository geoPointRepository) throws Exception {
-        long longStartDate = tripDto.getStartDateMillis();
-        long longEndDate = tripDto.getEndDateMillis();
-        List<GeoPointEntity> geoPointEntityList = geoPointRepository.findAllBetweenDates(longStartDate, longEndDate);
-        if (geoPointEntityList.size() == 0) return;
-
+    private void saveImage(List<GeoPointEntity> geoPointEntitiesByVehicleIdAndDates) throws Exception {
+        if (geoPointEntitiesByVehicleIdAndDates.size() == 0) return;
         StringBuilder query = new StringBuilder();
-        for (int i = 0; i < geoPointEntityList.size(); i++) {
-            GeoPointEntity geoPointEntity = geoPointEntityList.get(i);
+        for (int i = 0; i < geoPointEntitiesByVehicleIdAndDates.size(); i++) {
+            GeoPointEntity geoPointEntity = geoPointEntitiesByVehicleIdAndDates.get(i);
             query.append(geoPointEntity.getGeoPoint().getX()).append(',').append(geoPointEntity.getGeoPoint().getY());
-            if (i != geoPointEntityList.size() - 1) query.append(',');
+            if (i != geoPointEntitiesByVehicleIdAndDates.size() - 1) query.append(',');
         }
 
         URL url = new URL(imageUrl + query);
@@ -93,10 +83,5 @@ public class ShowTripOnMapDialogBuilder {
         }
         is.close();
         os.close();
-    }
-
-    private Long getLongDate(String date) throws Exception {
-        Date parsedDate = new SimpleDateFormat(dateFormatPattern).parse(date);
-        return parsedDate.getTime();
     }
 }

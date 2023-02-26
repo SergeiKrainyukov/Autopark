@@ -3,6 +3,7 @@ package com.example.demo3.view.dialogs;
 import com.example.demo3.model.entity.BrandEntity;
 import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.view.EnterpriseUi;
+import com.example.demo3.view.dialogs.helpers.SaveVehicle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -56,8 +57,7 @@ public class CRUDVehicleDialogBuilder {
         Button saveButton = createSaveButton(dialog, saveVehicle);
         Button cancelButton = createCancelButton(dialog);
 
-        dialog.getFooter().add(cancelButton);
-        dialog.getFooter().add(saveButton);
+        dialog.getFooter().add(cancelButton, saveButton);
 
         dialog.open();
     }
