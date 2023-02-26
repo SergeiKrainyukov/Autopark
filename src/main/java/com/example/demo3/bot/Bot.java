@@ -7,8 +7,6 @@ import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportResult;
-import com.example.demo3.repository.ManagersRepository;
-import com.example.demo3.repository.VehiclesRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -27,19 +25,15 @@ import java.util.List;
 @Slf4j
 public class Bot extends TelegramLongPollingBot {
 
-    final BotConfig config;
+    private final BotConfig config;
 
     private ManagerEntity manager = new ManagerEntity();
     private boolean isAuthorized = false;
 
-    private final ManagersRepository managersRepository;
-    private final VehiclesRepository vehiclesRepository;
     private final DatabaseController databaseController;
 
-    public Bot(BotConfig config, ManagersRepository managersRepository, VehiclesRepository vehiclesRepository, DatabaseController databaseController) {
+    public Bot(BotConfig config, DatabaseController databaseController) {
         this.config = config;
-        this.managersRepository = managersRepository;
-        this.vehiclesRepository = vehiclesRepository;
         this.databaseController = databaseController;
     }
 
@@ -151,7 +145,7 @@ public class Bot extends TelegramLongPollingBot {
                     calendar.setTime(dateTo);
                     calendar.add(Calendar.DATE, -1);
                     Date dateFrom = calendar.getTime();
-                    VehicleEntity vehicleEntity = vehiclesRepository.findVehicleByStateNumber(stateNumber);
+                    VehicleEntity vehicleEntity = databaseController.getVehicleByStateNumber(stateNumber);
                     if (vehicleEntity == null) {
                         builder.text("Vehicle not found. Try again.");
                         execute(builder.build());
@@ -177,7 +171,7 @@ public class Bot extends TelegramLongPollingBot {
                 try {
                     Date dateFrom = sdf.parse(dates[0]);
                     Date dateTo = sdf.parse(dates[1]);
-                    VehicleEntity vehicleEntity = vehiclesRepository.findVehicleByStateNumber(stateNumber);
+                    VehicleEntity vehicleEntity = databaseController.getVehicleByStateNumber(stateNumber);
                     if (vehicleEntity == null) {
                         builder.text("Vehicle not found. Try again.");
                         execute(builder.build());
@@ -200,7 +194,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private boolean validateCredentials() {
-        Iterable<ManagerEntity> managerEntities = managersRepository.findAll();
+        Iterable<ManagerEntity> managerEntities = databaseController.getManagers();
         for (ManagerEntity managerEntity : managerEntities) {
             if (manager.getUsername().equals(managerEntity.getUsername()) && manager.getPassword().equals(managerEntity.getPassword())) {
                 manager = managerEntity;

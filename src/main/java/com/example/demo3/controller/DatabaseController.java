@@ -250,7 +250,7 @@ public class DatabaseController {
         return managers.get(0);
     }
 
-    private List<ManagerEntity> getManagers() {
+    public List<ManagerEntity> getManagers() {
         List<ManagerEntity> managers = new ArrayList<>();
         for (ManagerEntity manager : managersRepository.findAll()) {
             managers.add(manager);
@@ -261,7 +261,11 @@ public class DatabaseController {
     public Long getVehicleIdByStateNumber(Integer stateNumber) {
         VehicleEntity vehicleEntity = vehiclesRepository.findVehicleByStateNumber(stateNumber);
         if (vehicleEntity != null) return vehicleEntity.getId();
-        else return -1L;
+        return -1L;
+    }
+
+    public VehicleEntity getVehicleByStateNumber(Integer stateNumber) {
+        return vehiclesRepository.findVehicleByStateNumber(stateNumber);
     }
 
     public List<DriverEntity> getDriversByEnterpriseId(long enterpriseId) {
