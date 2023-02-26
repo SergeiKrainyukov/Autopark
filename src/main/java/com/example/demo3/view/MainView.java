@@ -39,15 +39,9 @@ public class MainView extends VerticalLayout {
 
     private final Grid<EnterpriseUi> enterprisesGrid = new Grid<>(EnterpriseUi.class, false);
 
-    private final ShowAllDriversDialogBuilder showAllDriversDialogBuilder;
-
     @Autowired
-    public MainView(
-            ShowAllDriversDialogBuilder showAllDriversDialogBuilder,
-            SecurityService securityService,
-            DatabaseController databaseController) {
+    public MainView(SecurityService securityService, DatabaseController databaseController) {
         this.databaseController = databaseController;
-        this.showAllDriversDialogBuilder = showAllDriversDialogBuilder;
         this.securityService = securityService;
 
         setSpacing(true);
@@ -109,7 +103,7 @@ public class MainView extends VerticalLayout {
         horizontalLayout.add(new H4(DRIVERS_TITLE));
 
         Button showAllDriversButton = new Button(SHOW_ALL_BUTTON);
-        showAllDriversButton.addClickListener(event -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), enterpriseUi -> showAllDriversDialogBuilder.createDialogForShowingDrivers(enterpriseUi.getId())));
+        showAllDriversButton.addClickListener(event -> new SelectEnterpriseDialogBuilder().createDialog(getEnterprisesUi(), enterpriseUi -> new ShowAllDriversDialogBuilder().createDialogForShowingDrivers(databaseController.getDriversByEnterpriseId(enterpriseUi.getId()))));
 
         horizontalLayout.add(showAllDriversButton);
         horizontalLayout.setAlignItems(Alignment.CENTER);

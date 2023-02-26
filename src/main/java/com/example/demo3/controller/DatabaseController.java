@@ -260,4 +260,10 @@ public class DatabaseController {
         else return -1L;
     }
 
+    public List<DriverEntity> getDriversByEnterpriseId(long enterpriseId) {
+        List<DriverEntity> driverEntityList = driversRepository.getAllByEnterpriseId(enterpriseId);
+        if (driverEntityList == null) return new ArrayList<>();
+        return driverEntityList;
+    }
+
 }
