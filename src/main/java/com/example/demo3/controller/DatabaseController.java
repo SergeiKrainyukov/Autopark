@@ -254,4 +254,10 @@ public class DatabaseController {
         return managers;
     }
 
+    public Long getVehicleIdByStateNumber(Integer stateNumber) {
+        VehicleEntity vehicleEntity = vehiclesRepository.findVehicleByStateNumber(stateNumber);
+        if (vehicleEntity != null) return vehicleEntity.getId();
+        else return -1L;
+    }
+
 }

@@ -5,7 +5,7 @@ import com.example.demo3.model.entity.VehicleEntity;
 import com.example.demo3.view.EnterpriseUi;
 import com.example.demo3.view.dialogs.helpers.DeleteVehicle;
 import com.example.demo3.view.dialogs.helpers.GetGeoPointsHelper;
-import com.example.demo3.view.dialogs.helpers.GetTripsHelper;
+import com.example.demo3.view.dialogs.helpers.GetTripsDtoHelper;
 import com.example.demo3.view.dialogs.helpers.SaveVehicle;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -48,11 +48,11 @@ public class ShowVehiclesDialogBuilder {
         this.brandEntities = brandEntities;
     }
 
-    public void createDialogForShowingVehicles(EnterpriseUi enterpriseUi, List<VehicleEntity> vehicleEntities, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsHelper getTripsHelper, GetGeoPointsHelper getGeoPointsHelper) {
+    public void createDialogForShowingVehicles(EnterpriseUi enterpriseUi, List<VehicleEntity> vehicleEntities, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsDtoHelper getTripsDtoHelper, GetGeoPointsHelper getGeoPointsHelper) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle(VEHICLES_TITLE + FOR + enterpriseUi.getName());
 
-        VerticalLayout dialogLayout = createDialogLayout(dialog, vehicleEntities, saveVehicle, deleteVehicle, getTripsHelper, getGeoPointsHelper);
+        VerticalLayout dialogLayout = createDialogLayout(dialog, vehicleEntities, saveVehicle, deleteVehicle, getTripsDtoHelper, getGeoPointsHelper);
         dialog.add(dialogLayout);
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
@@ -61,10 +61,10 @@ public class ShowVehiclesDialogBuilder {
         dialog.open();
     }
 
-    private VerticalLayout createDialogLayout(Dialog dialog, List<VehicleEntity> vehicleEntities, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsHelper getTripsHelper, GetGeoPointsHelper getGeoPointsHelper) {
+    private VerticalLayout createDialogLayout(Dialog dialog, List<VehicleEntity> vehicleEntities, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsDtoHelper getTripsDtoHelper, GetGeoPointsHelper getGeoPointsHelper) {
         VirtualList<VehicleEntity> list = new VirtualList<>();
         list.setItems(vehicleEntities);
-        list.setRenderer(getVehicleComponentRenderer(dialog, saveVehicle, deleteVehicle, getTripsHelper, getGeoPointsHelper));
+        list.setRenderer(getVehicleComponentRenderer(dialog, saveVehicle, deleteVehicle, getTripsDtoHelper, getGeoPointsHelper));
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
         dialogLayout.setAlignItems(FlexComponent.Alignment.START);
@@ -74,7 +74,7 @@ public class ShowVehiclesDialogBuilder {
     }
 
     //TODO: сделать отдельный объект для операций в диалоговом окне
-    private Renderer<VehicleEntity> getVehicleComponentRenderer(Dialog dialog, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsHelper getTripsHelper, GetGeoPointsHelper getGeoPointsHelper) {
+    private Renderer<VehicleEntity> getVehicleComponentRenderer(Dialog dialog, SaveVehicle saveVehicle, DeleteVehicle deleteVehicle, GetTripsDtoHelper getTripsDtoHelper, GetGeoPointsHelper getGeoPointsHelper) {
         return new ComponentRenderer<>(
                 vehicle -> {
                     HorizontalLayout cardLayout = new HorizontalLayout();
@@ -94,7 +94,7 @@ public class ShowVehiclesDialogBuilder {
 
                     Button routesButton = new Button(new Icon(VaadinIcon.ROAD));
                     routesButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-                        new ShowAllTripsDialogBuilder(getGeoPointsHelper, vehicle.getId()).createTripsDialog(getTripsHelper);
+                        new ShowAllTripsDialogBuilder(getGeoPointsHelper, vehicle.getId()).createTripsDialog(getTripsDtoHelper);
                         dialog.close();
                     });
                     Button updateVehicleButton = new Button(new Icon(VaadinIcon.PENCIL));

@@ -14,13 +14,12 @@ public class MileageByPeriodReport extends Report {
     private final Calendar calendarFrom = new GregorianCalendar();
     private final Calendar calendarTo = new GregorianCalendar();
 
-    public MileageByPeriodReport(ReportPeriod period, long dateFrom, long dateTo) {
-        super(period, dateFrom, dateTo);
-        setReportType(ReportType.MILEAGE_BY_PERIOD);
+    public MileageByPeriodReport(ReportPeriod period, long dateFrom, long dateTo, List<TripEntity> tripsByVehicleIdAndDates) {
+        super(ReportType.MILEAGE_BY_PERIOD, period, dateFrom, dateTo);
+        calculateResult(tripsByVehicleIdAndDates);
     }
 
-    @Override
-    public List<ReportResult> getResult(List<TripEntity> tripsByVehicleIdAndDates) {
+    public void calculateResult(List<TripEntity> tripsByVehicleIdAndDates) {
         List<ReportResult> reportResults = new ArrayList<>();
         int totalDistance = calculateDistance(tripsByVehicleIdAndDates);
 
@@ -47,7 +46,7 @@ public class MileageByPeriodReport extends Report {
                 break;
             }
         }
-        return reportResults;
+        setResult(reportResults);
     }
 
     private int calculateDistance(List<TripEntity> tripsByVehicleIdAndDates) {

@@ -1,6 +1,6 @@
 package com.example.demo3.view.dialogs;
 
-import com.example.demo3.controller.DatabaseController;
+import com.example.demo3.model.entity.TripEntity;
 import com.example.demo3.model.report.MileageByPeriodReport;
 import com.example.demo3.model.report.ReportPeriod;
 import com.example.demo3.model.report.ReportResult;
@@ -16,7 +16,6 @@ import com.vaadin.flow.component.virtuallist.VirtualList;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -25,8 +24,6 @@ import static com.example.demo3.common.Strings.OK_BUTTON;
 @SpringComponent
 @UIScope
 public class MileageByPeriodReportDialogBuilder {
-
-    private final DatabaseController databaseController;
 
     private final ComponentRenderer<Component, ReportResult> driverEntityComponentRenderer = new ComponentRenderer<>(
             result -> {
@@ -42,16 +39,11 @@ public class MileageByPeriodReportDialogBuilder {
                 return cardLayout;
             });
 
-    @Autowired
-    public MileageByPeriodReportDialogBuilder(DatabaseController databaseController) {
-        this.databaseController = databaseController;
-    }
-
-    public void createDialogForShowingReports(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
+    public void createDialogForShowingReports(long dateFrom, long dateTo, ReportPeriod reportPeriod, List<TripEntity> tripEntities) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Mileage By " + reportPeriod.name() + " Report");
+        dialog.setHeaderTitle("Mileage By " + reportPeriod + " Report");
 
-        dialog.add(createDialogLayout(vehicleId, dateFrom, dateTo, reportPeriod));
+        dialog.add(createDialogLayout(dateFrom, dateTo, reportPeriod, tripEntities));
 
         Button okButton = new Button(OK_BUTTON, event -> dialog.close());
 
@@ -59,10 +51,10 @@ public class MileageByPeriodReportDialogBuilder {
         dialog.open();
     }
 
-    private VerticalLayout createDialogLayout(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
+    private VerticalLayout createDialogLayout(long dateFrom, long dateTo, ReportPeriod reportPeriod, List<TripEntity> tripEntities) {
 
         VirtualList<ReportResult> list = new VirtualList<>();
-        list.setItems(getResults(vehicleId, dateFrom, dateTo, reportPeriod));
+        list.setItems(getReportResults(dateFrom, dateTo, reportPeriod, tripEntities));
         list.setRenderer(driverEntityComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);
@@ -73,8 +65,8 @@ public class MileageByPeriodReportDialogBuilder {
     }
 
     //TODO: Нужно поправить работу с датами, чтобы было с 0:00, а не с текущего времени
-    private List<ReportResult> getResults(Long vehicleId, long dateFrom, long dateTo, ReportPeriod reportPeriod) {
-        return new MileageByPeriodReport(reportPeriod, dateFrom, dateTo).getResult(databaseController.getAllTripsByVehicleIdAndDates(vehicleId, dateFrom, dateTo));
+    private List<ReportResult> getReportResults(long dateFrom, long dateTo, ReportPeriod reportPeriod, List<TripEntity> tripEntities) {
+        return new MileageByPeriodReport(reportPeriod, dateFrom, dateTo, tripEntities).getResult();
     }
 
 

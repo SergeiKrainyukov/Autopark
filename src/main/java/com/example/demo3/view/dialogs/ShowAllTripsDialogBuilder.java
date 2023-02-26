@@ -2,7 +2,7 @@ package com.example.demo3.view.dialogs;
 
 import com.example.demo3.model.dto.TripDto;
 import com.example.demo3.view.dialogs.helpers.GetGeoPointsHelper;
-import com.example.demo3.view.dialogs.helpers.GetTripsHelper;
+import com.example.demo3.view.dialogs.helpers.GetTripsDtoHelper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -69,11 +69,11 @@ public class ShowAllTripsDialogBuilder {
         this.vehicleId = vehicleId;
     }
 
-    public void createTripsDialog(GetTripsHelper getTripsHelper) {
+    public void createTripsDialog(GetTripsDtoHelper getTripsDtoHelper) {
         Dialog dialog = new Dialog();
         dialog.setHeaderTitle(ROUTES_TITLE);
 
-        VerticalLayout dialogLayout = createDialogLayout(vehicleId, getTripsHelper);
+        VerticalLayout dialogLayout = createDialogLayout(vehicleId, getTripsDtoHelper);
 
         DatePicker startDatePicker = new DatePicker(START_DATE);
         DatePicker endDatePicker = new DatePicker(END_DATE);
@@ -83,8 +83,8 @@ public class ShowAllTripsDialogBuilder {
             long startDate = startDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
             long endDate = endDatePicker.getValue().atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
             if (startDate == endDate) {
-                list.setItems(getTripsHelper.getTrips(vehicleId, startDate, endDate + DEFAULT_DAY_MILLIS - 1));
-            } else list.setItems(getTripsHelper.getTrips(vehicleId, startDate, endDate));
+                list.setItems(getTripsDtoHelper.getTrips(vehicleId, startDate, endDate + DEFAULT_DAY_MILLIS - 1));
+            } else list.setItems(getTripsDtoHelper.getTrips(vehicleId, startDate, endDate));
         });
         dialog.add(startDatePicker, endDatePicker, reloadButton, dialogLayout);
 
@@ -93,8 +93,8 @@ public class ShowAllTripsDialogBuilder {
         dialog.open();
     }
 
-    private VerticalLayout createDialogLayout(Long vehicleId, GetTripsHelper getTripsHelper) {
-        list.setItems(getTripsHelper.getTrips(vehicleId, 0, DEFAULT_TO_TIME));
+    private VerticalLayout createDialogLayout(Long vehicleId, GetTripsDtoHelper getTripsDtoHelper) {
+        list.setItems(getTripsDtoHelper.getTrips(vehicleId, 0, DEFAULT_TO_TIME));
         list.setRenderer(tripComponentRenderer);
 
         VerticalLayout dialogLayout = new VerticalLayout(list);

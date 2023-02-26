@@ -17,7 +17,7 @@ public class ReportService {
     public ReportDto getReport(ReportInfoDto reportInfoDto, List<TripEntity> tripsByVehicleIdAndDates) {
         switch (reportInfoDto.getType()) {
             default: {
-                return new ReportDto(new MileageByPeriodReport(parseReportPeriod(reportInfoDto.getPeriod()), getLongDate(reportInfoDto.getStringDateFrom()), getLongDate(reportInfoDto.getStringDateTo())).getResult(tripsByVehicleIdAndDates));
+                return new ReportDto(new MileageByPeriodReport(parseReportPeriod(reportInfoDto.getPeriod()), getLongDate(reportInfoDto.getStringDateFrom()), getLongDate(reportInfoDto.getStringDateTo()), tripsByVehicleIdAndDates).getResult());
             }
         }
     }

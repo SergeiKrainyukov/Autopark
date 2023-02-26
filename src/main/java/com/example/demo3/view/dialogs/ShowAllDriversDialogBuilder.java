@@ -26,6 +26,7 @@ public class ShowAllDriversDialogBuilder {
     private static final String NAME = "Name: ";
     private static final String SALARY = "Salary: ";
 
+    //TODO: remove it
     private final DriversRepository driversRepository;
 
     private final ComponentRenderer<Component, DriverEntity> driverEntityComponentRenderer = new ComponentRenderer<>(

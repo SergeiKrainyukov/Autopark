@@ -158,7 +158,7 @@ public class Bot extends TelegramLongPollingBot {
                         return;
                     }
                     List<TripEntity> tripsByVehicleIdAndDates = databaseController.getAllTripsByVehicleIdAndDates(vehicleEntity.getId(), dateFrom.getTime(), dateTo.getTime());
-                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.DAY, dateFrom.getTime(), dateTo.getTime()).getResult(tripsByVehicleIdAndDates);
+                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.DAY, dateFrom.getTime(), dateTo.getTime(), tripsByVehicleIdAndDates).getResult();
                     int mileageByDay = 0;
                     for (ReportResult reportResult : reportResultList) {
                         mileageByDay += Integer.parseInt(reportResult.getValue());
@@ -184,7 +184,7 @@ public class Bot extends TelegramLongPollingBot {
                         return;
                     }
                     List<TripEntity> tripsByVehicleIdAndDates = databaseController.getAllTripsByVehicleIdAndDates(vehicleEntity.getId(), dateFrom.getTime(), dateTo.getTime());
-                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.MONTH, dateFrom.getTime(), dateTo.getTime()).getResult(tripsByVehicleIdAndDates);
+                    List<ReportResult> reportResultList = new MileageByPeriodReport(ReportPeriod.MONTH, dateFrom.getTime(), dateTo.getTime(), tripsByVehicleIdAndDates).getResult();
                     double mileageByPeriod = 0;
                     for (ReportResult reportResult : reportResultList) {
                         mileageByPeriod += Double.parseDouble(reportResult.getValue());
